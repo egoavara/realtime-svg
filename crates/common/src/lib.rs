@@ -1,0 +1,28 @@
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+pub mod browser_engine;
+pub mod errors;
+pub mod session_data;
+pub mod state;
+
+/// 세션 관련 응답.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SessionInfo {
+    pub session_id: String,
+}
+
+/// 브로드캐스트되는 SVG 프레임.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SvgFrame {
+    pub content: String,
+    pub timestamp: DateTime<Utc>,
+}
+
+impl SvgFrame {
+    pub fn new(content: impl Into<String>) -> Self {
+        Self {
+            content: content.into(),
+            timestamp: Utc::now(),
+        }
+    }
+}

@@ -1,0 +1,27 @@
+[package]
+name = "backend"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+
+[dependencies]
+axum = { workspace = true }
+axum-extra = { workspace = true }
+tokio = { workspace = true }
+tokio-stream = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+tower-http = { workspace = true }
+chrono = { workspace = true }
+bytes = { workspace = true }
+include_dir = { workspace = true }
+anyhow = { workspace = true }
+common = { path = "../common" }
+redis = { workspace = true }
+humantime = { workspace = true }
+mime_guess = { workspace = true }
+
+[build-dependencies]
+wasm-bindgen-cli-support = "0.2"

@@ -1,0 +1,36 @@
+[workspace]
+resolver = "2"
+members = ["crates/common", "crates/backend", "crates/frontend"]
+
+[workspace.package]
+edition = "2021"
+version = "0.1.0"
+
+[workspace.dependencies]
+axum = { version = "0.8", features = ["json"] }
+axum-extra = { version = "0.10", features = ["typed-header"] }
+tokio = { version = "1", features = ["full"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+futures = { version = "0.3" }
+thiserror = "2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+chrono = { version = "0.4", features = ["serde", "clock"] }
+bytes = "1"
+tower-http = { version = "0.6", features = ["cors", "trace", "fs"] }
+include_dir = "0.7"
+anyhow = "1"
+xmltree = "0.11"
+redis = { version = "0.32", features = [
+    "tls-rustls",
+    "tokio-comp",
+    "tokio-rustls-comp",
+    "cluster-async",
+    "connection-manager",
+    "uuid",
+] }
+humantime = "2"
+tera = { version = "1" }
+mime_guess = { version = "2" }

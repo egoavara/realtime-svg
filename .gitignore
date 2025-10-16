@@ -27,3 +27,5 @@ target
 crates/frontend/dist/
 
 .env
+
+dump.rdb

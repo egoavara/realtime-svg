@@ -8,7 +8,8 @@
 		"ghcr.io/devcontainers-extra/features/redis-homebrew:1": {},
 		"ghcr.io/devcontainers/features/rust:1": {},
 		"ghcr.io/devcontainer-community/devcontainer-features/opencode.ai:1": {},
-		"ghcr.io/jsburckhardt/devcontainer-features/uv:1": {}
+		"ghcr.io/jsburckhardt/devcontainer-features/uv:1": {},
+		"ghcr.io/devcontainers/features/github-cli:1": {}
 	},
 	"runArgs": [
 		"--env-file",

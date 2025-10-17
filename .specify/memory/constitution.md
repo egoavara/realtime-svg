@@ -1,16 +1,18 @@
 <!--
 Sync Impact Report
 ==================
-Version Change: 0.0.0 → 1.0.0
-Modified Principles: N/A (initial constitution)
-Added Sections: All core principles and governance
+Version Change: 1.0.0 → 1.0.1
+Modified Principles: 
+  - III. Type-Safe Domain Models: Corrected rendering approach from XML parsing to Tera templating
+Added Sections: None
 Removed Sections: None
 Templates Status:
-  ✅ plan-template.md - Constitution Check section aligns with principles
-  ✅ spec-template.md - Requirements structure supports principle-driven development
-  ✅ tasks-template.md - Task organization reflects testing and modularity principles
-  ✅ checklist-template.md - Generic structure compatible with all principles
+  ✅ plan-template.md - No changes needed (Constitution Check is generic)
+  ✅ spec-template.md - No changes needed (requirements-focused)
+  ✅ tasks-template.md - No changes needed (testing guidance still applies)
+  ✅ checklist-template.md - No changes needed (generic structure)
 Follow-up TODOs: None
+Rationale: PATCH version bump - clarifications to align constitution with actual implementation (Tera-based templating vs XML parsing). No governance changes or new principles added.
 -->
 
 # realtime-svg Constitution
@@ -38,23 +40,26 @@ compatibility once established.
 **Rationale**: Real-time streaming systems require precise protocol guarantees
 to prevent client breaking changes and ensure interoperability.
 
-### III. Type-Safe Domain Models
+### III. Template-Based SVG Rendering
 
-Domain entities (`SvgTemplate`, `UpdateRequest`, `SvgFrame`) MUST be defined as
-strongly-typed structs in `common` with `serde` serialization. Runtime string
-manipulation MUST be minimized in favor of structured parsing. XML operations
-MUST use validated libraries (`xmltree`, `roxmltree`) rather than regex or
-ad-hoc string replacements.
+SVG content MUST be generated using Tera template engine with structured
+parameter substitution. Domain entities (`SessionData`, `SvgFrame`) MUST be
+defined as strongly-typed structs in `common` with `serde` serialization.
+Templates MUST use Tera syntax (e.g., `{{ variable }}`, `{% if %}`) for
+dynamic content. Runtime string manipulation MUST be minimized in favor of
+structured template rendering.
 
-**Rationale**: Rust's type system prevents entire classes of runtime errors;
-leveraging it fully reduces debugging overhead and increases reliability.
+**Rationale**: Tera provides safe, testable template rendering with proper
+escaping and error handling. Template-based approach separates presentation
+from logic and enables non-developers to modify SVG designs.
 
 ### IV. Testing Discipline
 
 - **Unit tests**: All `common` crate logic MUST have unit tests covering
   success paths, edge cases, and error conditions.
-- **Integration tests**: Backend routes (`POST /api/update`, `GET /stream.svg`)
-  MUST have integration tests validating end-to-end request/response cycles.
+- **Integration tests**: Backend routes (`POST /api/session`,
+  `PUT /api/session/{id}`, `GET /stream/{id}`) MUST have integration tests
+  validating end-to-end request/response cycles.
 - **Contract tests**: Streaming boundary format and header compliance MUST be
   verified via contract tests.
 
@@ -68,7 +73,7 @@ testing catches issues before production deployment.
 All crates MUST use structured logging via `tracing` with appropriate log
 levels. Backend MUST log:
 - Incoming API requests with sanitized payloads
-- SVG rendering operations and timing
+- Template rendering operations and timing
 - Stream client connections and disconnections
 - Error conditions with context
 
@@ -101,13 +106,20 @@ delivering working features rather than over-engineering.
 ### Dependencies
 
 - Backend: `axum` (HTTP), `tokio` (async runtime), `tokio-stream` (streaming),
-  `tower-http` (middleware)
+  `tower-http` (middleware), `redis` (session storage and pubsub)
 - Common: `serde`/`serde_json` (serialization), `thiserror` (error handling),
-  `chrono` (timestamps), `xmltree` or `roxmltree` (XML parsing)
+  `chrono` (timestamps), `tera` (template engine)
 - Frontend: `yew` (WASM framework), browser-native fetch APIs
 
 New dependencies MUST be justified by necessity and evaluated for maintenance
 status, security, and bundle size impact.
+
+### Session Management
+
+- Sessions MUST be stored in Redis with configurable TTL
+- Session state MUST include template string and parameter map
+- Parameter updates MUST broadcast via Redis pubsub to all connected streams
+- Session IDs MUST be validated and sanitized before use
 
 ## Development Workflow
 
@@ -154,6 +166,7 @@ All pull requests MUST verify adherence to:
 - Type safety (no unsafe code without justification)
 - Testing discipline (tests for new functionality)
 - Observability (structured logging present)
+- Template rendering (Tera-based, no ad-hoc string manipulation)
 
 Constitution violations MUST be documented in plan.md Complexity Tracking table
 with justification and rejected simpler alternatives.
@@ -163,4 +176,4 @@ with justification and rejected simpler alternatives.
 See `AGENTS.md` for agent-specific development guidance and Korean language
 design notes.
 
-**Version**: 1.0.0 | **Ratified**: 2025-10-17 | **Last Amended**: 2025-10-17
+**Version**: 1.0.1 | **Ratified**: 2025-10-17 | **Last Amended**: 2025-10-17

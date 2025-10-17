@@ -23,7 +23,7 @@ impl WellKnownBrowserEngine {
         }
         WellKnownBrowserEngine::Unknown
     }
-    
+
     pub fn is_x_multipart_replace_double_frame(&self) -> bool {
         matches!(self, WellKnownBrowserEngine::Blink)
     }

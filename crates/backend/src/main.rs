@@ -6,8 +6,8 @@ use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
 use tracing::info;
 
-pub(crate) mod assets;
-pub(crate) mod route;
+pub mod assets;
+pub mod route;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -16,8 +16,16 @@ async fn main() -> anyhow::Result<()> {
     let redis_client = Client::open(redis_url.clone())
         .with_context(|| format!("Redis에 연결할 수 없습니다: {redis_url}"))?;
 
-    let state = AppState::new(redis_client);
-    
+    let state = AppState::new(redis_client.clone());
+
+    if let Err(e) = common::jwk::initialize_jwk_in_redis(&redis_client).await {
+        return Err(anyhow::anyhow!(
+            "Failed to initialize JWK in Redis: {:?}",
+            e
+        ));
+    }
+    info!("JWK initialized successfully");
+
     let app = Router::<AppState>::new()
         .merge(route::router())
         .with_state(state)

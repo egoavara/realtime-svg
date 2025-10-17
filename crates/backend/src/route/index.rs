@@ -1,8 +1,8 @@
 use crate::assets::STATIC_ASSETS;
 
-
 pub async fn handler() -> impl axum::response::IntoResponse {
-    STATIC_ASSETS.get_file("index.html")
+    STATIC_ASSETS
+        .get_file("index.html")
         .map(|file| {
             (
                 axum::http::StatusCode::OK,

@@ -121,11 +121,10 @@ fn ensure_wasm_target() -> bool {
         }
     }
 
-    match Command::new("rustup")
-        .args(["target", "add", "wasm32-unknown-unknown"])
-        .status()
-    {
-        Ok(status) if status.success() => true,
-        _ => false,
-    }
+    matches!(
+        Command::new("rustup")
+            .args(["target", "add", "wasm32-unknown-unknown"])
+            .status(),
+        Ok(status) if status.success()
+    )
 }

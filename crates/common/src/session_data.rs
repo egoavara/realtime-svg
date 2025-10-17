@@ -8,6 +8,8 @@ use crate::{errors::ApiError, SvgFrame};
 pub struct SessionData {
     pub template: String,
     pub args: HashMap<String, serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub owner: Option<String>,
 }
 
 impl SessionData {
@@ -15,6 +17,19 @@ impl SessionData {
         Self {
             template: template.into(),
             args,
+            owner: None,
+        }
+    }
+
+    pub fn new_with_owner(
+        template: impl Into<String>,
+        args: HashMap<String, serde_json::Value>,
+        owner: String,
+    ) -> Self {
+        Self {
+            template: template.into(),
+            args,
+            owner: Some(owner),
         }
     }
 

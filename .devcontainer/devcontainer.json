@@ -18,6 +18,47 @@
 		"EDITOR": "code --wait"
 	},
 	"postStartCommand": "redis-server --daemonize yes",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"wayou.vscode-todo-highlight",
+				"github.copilot",
+				"github.copilot-chat",
+				"ms-ceintl.vscode-language-pack-ko",
+				"rust-lang.rust-analyzer",
+				"tamasfe.even-better-toml",
+				"vadimcn.vscode-lldb"
+			],
+			"settings": {
+				"todohighlight.keywords": [
+					{
+						"text": "NOTE",
+						"color": "#FF00FF",
+						"backgroundColor": "transparent",
+						"overviewRulerColor": "rgba(255, 0, 255, 0.7)",
+						"fontWeight": "bold",
+						"fontStyle": "italic"
+					},
+					{
+						"text": "FIXME",
+						"color": "#FF0000",
+						"backgroundColor": "transparent",
+						"overviewRulerColor": "rgba(255, 0, 0, 0.7)",
+						"fontWeight": "bold",
+						"fontStyle": "italic"
+					},
+					{
+						"text": "[NEEDS CLARIFICATION]",
+						"color": "#FF4500",
+						"backgroundColor": "transparent",
+						"overviewRulerColor": "rgba(255, 69, 0, 0.7)",
+						"fontWeight": "bold",
+						"fontStyle": "italic"
+					}
+				],
+			}
+		}
+	}
 	// Use 'mounts' to make the cargo cache persistent in a Docker Volume.
 	// "mounts": [
 	// 	{

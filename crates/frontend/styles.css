@@ -4,6 +4,7 @@
   background: #0f172a;
   color: #e2e8f0;
 }
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -12,140 +13,79 @@ body {
   padding: 3rem 1rem;
   box-sizing: border-box;
 }
+
 main.app {
-  max-width: 720px;
   width: 100%;
+  max-width: 740px;
   display: grid;
   gap: 1.5rem;
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(15, 23, 42, 0.82);
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 1.5rem;
-  padding: 2rem;
+  padding: 2.25rem;
   box-shadow: 0 30px 60px rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(16px);
 }
+
 main.app header {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   gap: 0.75rem;
 }
+
 main.app header h1 {
   margin: 0;
   font-size: 1.75rem;
 }
+
 main.app header span {
   font-size: 0.9rem;
   color: #94a3b8;
 }
-main.app .session-manager {
-  display: grid;
-  gap: 0.75rem;
-}
-main.app .session-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-main.app .session-form input[type="text"] {
-  flex: 1;
-  min-width: 160px;
-  padding: 0.7rem 1rem;
-  border-radius: 0.75rem;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  background: rgba(15, 23, 42, 0.6);
-  color: inherit;
-  font-size: 1rem;
-}
-main.app .session-form button {
-  padding: 0.65rem 1.25rem;
-  border-radius: 0.75rem;
-  border: none;
-  background: rgba(59, 130, 246, 0.15);
-  color: #bfdbfe;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-main.app .session-form button:hover {
-  background: rgba(59, 130, 246, 0.25);
-}
-main.app .session-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  min-height: 2rem;
-}
-main.app .session-chip {
-  padding: 0.45rem 0.9rem;
-  border-radius: 0.75rem;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  background: rgba(15, 23, 42, 0.6);
-  color: #e2e8f0;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.2s ease, border 0.2s ease, color 0.2s ease;
-}
-main.app .session-chip.active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.85), rgba(14, 165, 233, 0.85));
-  border-color: transparent;
-  color: white;
-  box-shadow: 0 10px 25px rgba(14, 165, 233, 0.35);
-}
-main.app .session-empty {
-  color: #94a3b8;
-  font-size: 0.9rem;
-}
-main.app .preview-wrapper {
-  display: grid;
-  gap: 0.75rem;
-}
-main.app .preview-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.9rem;
-  color: #94a3b8;
-}
-main.app .preview-header strong {
-  color: #e2e8f0;
-  font-weight: 600;
-}
-main.app .preview {
-  width: 100%;
-  border-radius: 1rem;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  background: #0f172a;
-  min-height: 200px;
-  object-fit: contain;
-}
-main.app .preview.empty {
-  display: grid;
-  place-items: center;
-  text-align: center;
-  padding: 2rem;
-  border: 1px dashed rgba(148, 163, 184, 0.35);
-  color: #94a3b8;
-}
-main.app .editor {
+
+main.app.create-view .create-form {
   display: grid;
   gap: 1rem;
 }
-main.app .editor label {
-  display: grid;
-  gap: 0.4rem;
-  font-size: 0.9rem;
+
+main.app .inline-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
-main.app .editor input[type="text"] {
+
+main.app .inline-inputs input[type="text"] {
+  flex: 1;
+  min-width: 160px;
+}
+
+main.app input[type="text"],
+main.app textarea {
+  width: 100%;
   padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
+  border-radius: 0.9rem;
   border: 1px solid rgba(148, 163, 184, 0.25);
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(15, 23, 42, 0.65);
   color: inherit;
   font-size: 1rem;
+  box-sizing: border-box;
 }
-main.app .editor button {
-  justify-self: start;
+
+main.app textarea {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+main.app label.field {
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+main.app button {
   padding: 0.7rem 1.6rem;
   border-radius: 999px;
   border: none;
@@ -154,22 +94,162 @@ main.app .editor button {
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 10px 30px rgba(37, 99, 235, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
 }
-main.app .editor button:disabled {
+
+main.app button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(37, 99, 235, 0.45);
+}
+
+main.app button:disabled {
   opacity: 0.6;
   cursor: progress;
+  box-shadow: none;
+  transform: none;
 }
+
 main.app .status-line {
   font-size: 0.9rem;
   color: #38bdf8;
   min-height: 1.2rem;
 }
+
 main.app .status-line.error {
   color: #f87171;
 }
+
 main.app .status-line.success {
   color: #34d399;
 }
+
 main.app .status-line.loading {
   color: #facc15;
+}
+
+main.app .session-info {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.6);
+}
+
+main.app .session-info .info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  color: #94a3b8;
+}
+
+main.app .session-info .info-row strong {
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+main.app.detail-view .detail-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 960px) {
+  main.app.detail-view .detail-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.preview-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.preview-header button {
+  padding: 0.5rem 1.2rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.preview {
+  width: 100%;
+  min-height: 220px;
+  border-radius: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.8);
+  object-fit: contain;
+}
+
+.stream-meta {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.stream-url {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  background: rgba(15, 23, 42, 0.85);
+  color: #38bdf8;
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  font-size: 0.9rem;
+}
+
+.template-field .template-view {
+  min-height: 260px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  color: #e2e8f0;
+}
+
+.template-field .template-view[readonly] {
+  cursor: default;
+}
+
+main.app .editor {
+  display: grid;
+  gap: 1rem;
+}
+
+main.app .editor textarea.args-editor {
+  min-height: 280px;
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.detail-feedback {
+  padding: 2rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.6);
+  font-size: 0.95rem;
+  color: #94a3b8;
+  display: grid;
+  gap: 1rem;
+  place-items: start;
+}
+
+.detail-feedback.loading {
+  text-align: center;
+  place-items: center;
+}
+
+.detail-feedback.error {
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #fca5a5;
 }

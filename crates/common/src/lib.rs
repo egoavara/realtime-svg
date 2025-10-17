@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 pub mod browser_engine;
@@ -9,6 +11,14 @@ pub mod state;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct SessionInfo {
     pub session_id: String,
+}
+
+/// 세션 관련 응답.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct SessionDetailInfo {
+    pub session_id: String,
+    pub template: String,
+    pub args: HashMap<String, serde_json::Value>,
 }
 
 /// 브로드캐스트되는 SVG 프레임.

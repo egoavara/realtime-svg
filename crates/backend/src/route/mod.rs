@@ -11,5 +11,6 @@ pub fn router() -> Router<AppState> {
         .nest("/api", api::router())
         .nest("/stream", stream::router())
         .route("/static/{*path}", get(r#static::handler))
+        .route("/session/{session_id}", get(index::handler))
         .route("/", get(index::handler))
 }

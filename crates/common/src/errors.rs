@@ -15,6 +15,10 @@ pub enum ApiError {
     InvalidSessionId,
     InvalidExpire(String),
     InvalidDuration(humantime::DurationError),
+    Unauthorized(String),
+    Forbidden(String),
+    InternalError(String),
+    RedisError(String),
 }
 
 impl From<DurationError> for ApiError {
@@ -60,6 +64,13 @@ impl IntoResponse for ApiError {
             ),
             ApiError::InvalidExpire(message) => (StatusCode::BAD_REQUEST, message),
             ApiError::InvalidDuration(message) => (StatusCode::BAD_REQUEST, message.to_string()),
+            ApiError::Unauthorized(message) => (StatusCode::UNAUTHORIZED, message),
+            ApiError::Forbidden(message) => (StatusCode::FORBIDDEN, message),
+            ApiError::InternalError(message) => (StatusCode::INTERNAL_SERVER_ERROR, message),
+            ApiError::RedisError(message) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Redis 오류: {}", message),
+            ),
         };
         let body = serde_json::json!({ "error": message });
         (status, Json(body)).into_response()

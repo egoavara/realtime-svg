@@ -6,8 +6,7 @@ use figment::{
 };
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use std::{f64::consts::E, fmt};
-use tracing::info;
+use std::fmt;
 
 /// 서버 실행에 필요한 모든 설정값을 담는 구조체
 ///

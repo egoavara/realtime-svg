@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 use crate::errors::ApiError;
 
 const ISSUER: &str = "realtime-svg";
-const DEFAULT_TTL_HOURS: i64 = 24;
 
 /// JWT Claims structure following RFC 7519 standard
 ///

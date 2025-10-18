@@ -6,7 +6,6 @@ build = "build.rs"
 
 [dependencies]
 axum = { workspace = true }
-axum-extra = { workspace = true }
 tokio = { workspace = true }
 tokio-stream = { workspace = true }
 serde = { workspace = true }
@@ -18,7 +17,6 @@ chrono = { workspace = true }
 bytes = { workspace = true }
 include_dir = { workspace = true }
 anyhow = { workspace = true }
-common = { path = "../common" }
 redis = { workspace = true }
 humantime = { workspace = true }
 mime_guess = { workspace = true }
@@ -26,6 +24,8 @@ rsa = { workspace = true }
 base64 = { workspace = true }
 jsonwebtoken = { workspace = true }
 dotenvy = { workspace = true }
+
+common = { path = "../common" }
 
 [dev-dependencies]
 tower = { workspace = true }

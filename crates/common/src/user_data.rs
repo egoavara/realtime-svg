@@ -1,9 +1,8 @@
-use std::collections::HashMap;
 
-use argon2::{password_hash::SaltString, Argon2, PasswordHasher, PasswordVerifier};
+use argon2::{password_hash::SaltString, Argon2, PasswordHasher};
 use serde::{Deserialize, Serialize};
 
-use crate::{errors::ApiError, SvgFrame};
+use crate::errors::ApiError;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct UserData {

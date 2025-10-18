@@ -1,5 +1,5 @@
 use axum::{extract::State, http::StatusCode, Json};
-use common::{errors::ApiError, jwt, state::AppState, user_data::UserData};
+use common::{errors::ApiError, jwt, state::AppState};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize)]

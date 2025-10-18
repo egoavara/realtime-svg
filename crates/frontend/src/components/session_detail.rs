@@ -21,7 +21,7 @@ pub fn session_detail_page(props: &SessionDetailPageProps) -> Html {
     let auth_context = use_context::<AuthContext>().expect("AuthContext must be provided");
 
     let session_detail = use_state(|| None::<SessionDetail>);
-    let args_text = use_state(|| String::new());
+    let args_text = use_state(String::new);
     let error_message = use_state(|| None::<String>);
     let loading = use_state(|| false);
     let updating = use_state(|| false);

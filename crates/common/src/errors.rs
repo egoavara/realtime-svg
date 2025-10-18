@@ -8,6 +8,8 @@ use redis::RedisError;
 
 #[derive(Debug)]
 pub enum ApiError {
+    Argon2(argon2::Error),
+    Argon2PasswordHash(argon2::password_hash::Error),
     Redis(RedisError),
     Json(serde_json::Error),
     SessionExists(String),
@@ -19,29 +21,36 @@ pub enum ApiError {
     Forbidden(String),
     InternalError(String),
     RedisError(String),
+    Unexpected(String),
 }
 
-impl From<DurationError> for ApiError {
-    fn from(value: DurationError) -> Self {
-        ApiError::InvalidDuration(value)
-    }
+macro_rules! wrap_error {
+    ($err_type:ty, $variant:ident) => {
+        impl From<$err_type> for ApiError {
+            fn from(value: $err_type) -> Self {
+                ApiError::$variant(value)
+            }
+        }
+    };
 }
 
-impl From<RedisError> for ApiError {
-    fn from(value: RedisError) -> Self {
-        ApiError::Redis(value)
-    }
-}
-
-impl From<serde_json::Error> for ApiError {
-    fn from(value: serde_json::Error) -> Self {
-        ApiError::Json(value)
-    }
-}
+wrap_error!(argon2::Error, Argon2);
+wrap_error!(argon2::password_hash::Error, Argon2PasswordHash);
+wrap_error!(RedisError, Redis);
+wrap_error!(serde_json::Error, Json);
+wrap_error!(DurationError, InvalidDuration);
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
         let (status, message) = match self {
+            ApiError::Argon2(err) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("암호화 오류: {err}"),
+            ),
+            ApiError::Argon2PasswordHash(err) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("암호화 해시 오류: {err}"),
+            ),
             ApiError::Redis(err) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 format!("Redis 오류: {err}"),
@@ -70,6 +79,10 @@ impl IntoResponse for ApiError {
             ApiError::RedisError(message) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 format!("Redis 오류: {}", message),
+            ),
+            ApiError::Unexpected(message) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("예상하지 못한 오류입니다: {}", message),
             ),
         };
         let body = serde_json::json!({ "error": message });

@@ -2,6 +2,7 @@ use axum::{routing::get, Router};
 use common::state::AppState;
 
 pub mod api;
+pub mod fallback;
 pub mod index;
 pub mod r#static;
 pub mod stream;
@@ -15,4 +16,5 @@ pub fn router() -> Router<AppState> {
         .route("/static/{*path}", get(r#static::handler))
         .route("/session/{session_id}", get(index::handler))
         .route("/", get(index::handler))
+        .fallback(fallback::handler)
 }

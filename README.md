@@ -125,7 +125,7 @@ cargo run --bin backend
 ```bash
 curl -X POST http://localhost:3000/api/auth/token \
   -H "Content-Type: application/json" \
-  -d '{"user_id": "alice"}'
+  -d '{"user_id": "alice", "password": "your-password"}'
 
 # Response: {"token": "eyJhbGciOiJSUzI1NiIs..."}
 ```
@@ -173,7 +173,8 @@ JWT 토큰 발급
 ```json
 {
   "user_id": "alice",
-  "ttl_seconds": 86400  // optional, default: 24 hours
+  "password": "your-password",
+  "ttl_seconds": 86400  // optional, default: 3600 seconds
 }
 ```
 
@@ -232,7 +233,7 @@ JWK 공개 키 조회 (RFC 8414)
 }
 ```
 
-#### `GET /api/user/{user_id}/sessions`
+#### `GET /api/user/{user_id}/session`
 사용자 세션 목록 조회
 
 **Headers:**
@@ -241,7 +242,7 @@ JWK 공개 키 조회 (RFC 8414)
 **Response:**
 ```json
 {
-  "sessions": [
+  "items": [
     {
       "session_id": "dashboard-1"
     }
@@ -291,7 +292,12 @@ realtime-svg/
 │   │   │   │   └── session/ # 공용 세션 API
 │   │   │   └── stream/      # 스트림 엔드포인트
 │   │   └── tests/       # 통합 테스트
-│   └── frontend/        # (예정) WASM 클라이언트
+│   └── frontend/        # Yew WASM 웹 클라이언트
+│       ├── src/
+│       │   ├── components/  # UI 컴포넌트
+│       │   ├── api/         # API 클라이언트
+│       │   └── auth/        # JWT 인증 로직
+│       └── styles.css   # 다크 테마 스타일
 └── specs/               # 기능 명세서
     └── 002-user-session-auth/
         ├── spec.md      # 요구사항 명세
@@ -302,12 +308,20 @@ realtime-svg/
 
 ## 기술 스택
 
+### 백엔드
 - **언어:** Rust 2021
 - **웹 프레임워크:** Axum 0.8
 - **템플릿:** Tera
 - **인증:** jsonwebtoken 10 (RS256)
 - **스토리지:** Redis 7+
 - **빌드:** Cargo workspace
+
+### 프론트엔드
+- **프레임워크:** Yew 0.21 (Rust WASM)
+- **라우팅:** yew-router 0.18
+- **HTTP 클라이언트:** gloo-net 0.4
+- **빌드:** Trunk
+- **스타일:** 커스텀 CSS (다크 테마)
 
 ## 보안
 

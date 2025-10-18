@@ -25,7 +25,7 @@ pub async fn create_test_app() -> Router {
         std::env::var("REDIS_URL").unwrap_or_else(|_| "redis://127.0.0.1/".to_string());
     let redis_client = Client::open(redis_url).unwrap();
 
-    common::jwk::initialize_jwk_in_redis(&redis_client)
+    common::share::initialize_redis(&redis_client)
         .await
         .unwrap();
 
@@ -70,7 +70,7 @@ pub async fn create_expired_jwt(redis_client: &redis::Client, user_id: &str) -> 
     use chrono::{Duration, Utc};
     use jsonwebtoken::{encode, Algorithm, Header};
     
-    let cache = common::jwk::JwkCache::new();
+    let cache = common::share::ShareState::new();
     let encoding_key = cache.get_encoding_key(redis_client).await.unwrap();
     
     let now = Utc::now();

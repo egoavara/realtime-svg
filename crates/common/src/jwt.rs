@@ -37,11 +37,10 @@ pub struct Claims {
 pub fn create_token(
     user_id: &str,
     encoding_key: &EncodingKey,
-    ttl_seconds: Option<i64>,
+    ttl_seconds: u64,
 ) -> Result<String, ApiError> {
     let now = Utc::now();
-    let ttl = ttl_seconds.unwrap_or(DEFAULT_TTL_HOURS * 3600);
-    let exp = now + Duration::seconds(ttl);
+    let exp = now + Duration::seconds(ttl_seconds as i64);
 
     let claims = Claims {
         sub: user_id.to_string(),
@@ -100,13 +99,9 @@ mod tests {
 
     fn generate_test_keys() -> (EncodingKey, DecodingKey) {
         let rsa_key = RsaPrivateKey::new(&mut rand::thread_rng(), 2048).unwrap();
-        let private_pem = rsa_key
-            .to_pkcs1_pem(rsa::pkcs1::LineEnding::LF)
-            .unwrap();
+        let private_pem = rsa_key.to_pkcs1_pem(rsa::pkcs1::LineEnding::LF).unwrap();
         let public_key = rsa_key.to_public_key();
-        let public_pem = public_key
-            .to_pkcs1_pem(rsa::pkcs1::LineEnding::LF)
-            .unwrap();
+        let public_pem = public_key.to_pkcs1_pem(rsa::pkcs1::LineEnding::LF).unwrap();
 
         let encoding_key = EncodingKey::from_rsa_pem(private_pem.as_bytes()).unwrap();
         let decoding_key = DecodingKey::from_rsa_pem(public_pem.as_bytes()).unwrap();
@@ -117,7 +112,7 @@ mod tests {
     #[test]
     fn test_create_token() {
         let (encoding_key, _) = generate_test_keys();
-        let token = create_token("test_user", &encoding_key, None).unwrap();
+        let token = create_token("test_user", &encoding_key, 3600).unwrap();
 
         assert!(!token.is_empty());
         assert!(token.contains('.'));
@@ -126,7 +121,7 @@ mod tests {
     #[test]
     fn test_verify_valid_token() {
         let (encoding_key, decoding_key) = generate_test_keys();
-        let token = create_token("test_user", &encoding_key, None).unwrap();
+        let token = create_token("test_user", &encoding_key, 3600).unwrap();
 
         let claims = verify_token(&token, &decoding_key).unwrap();
         assert_eq!(claims.sub, "test_user");
@@ -136,17 +131,17 @@ mod tests {
     #[test]
     fn test_verify_token_expiration() {
         let (encoding_key, decoding_key) = generate_test_keys();
-        
+
         let now = chrono::Utc::now();
         let exp = now - chrono::Duration::hours(1);
-        
+
         let claims = Claims {
             sub: "test_user".to_string(),
             exp: exp.timestamp() as usize,
             iat: now.timestamp() as usize,
             iss: ISSUER.to_string(),
         };
-        
+
         let header = Header::new(Algorithm::RS256);
         let token = encode(&header, &claims, &encoding_key).unwrap();
 
@@ -159,7 +154,7 @@ mod tests {
         let (encoding_key1, _) = generate_test_keys();
         let (_, decoding_key2) = generate_test_keys();
 
-        let token = create_token("test_user", &encoding_key1, None).unwrap();
+        let token = create_token("test_user", &encoding_key1, 3600).unwrap();
         let result = verify_token(&token, &decoding_key2);
 
         assert!(result.is_err());

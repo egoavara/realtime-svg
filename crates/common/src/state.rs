@@ -1,19 +1,20 @@
+use argon2::{PasswordHash, PasswordVerifier};
 use redis::{AsyncTypedCommands, Client};
 use serde::Serialize;
 
-use crate::{errors::ApiError, jwk::JwkCache, session_data::SessionData};
+use crate::{errors::ApiError, session_data::SessionData, share::ShareState, user_data::UserData};
 
 #[derive(Clone, Debug)]
 pub struct AppState {
     redis_client: Client,
-    jwk_cache: std::sync::Arc<JwkCache>,
+    share: ShareState,
 }
 
 impl AppState {
     pub fn new(redis_client: Client) -> Self {
         Self {
             redis_client: redis_client.clone(),
-            jwk_cache: std::sync::Arc::new(JwkCache::new()),
+            share: ShareState::new(),
         }
     }
 
@@ -21,8 +22,8 @@ impl AppState {
         &self.redis_client
     }
 
-    pub fn jwk_cache(&self) -> &JwkCache {
-        &self.jwk_cache
+    pub fn share(&self) -> &ShareState {
+        &self.share
     }
 
     pub async fn connection_redis(&self) -> Result<redis::aio::MultiplexedConnection, ApiError> {
@@ -151,5 +152,68 @@ impl AppState {
         }
 
         Ok(sessions)
+    }
+
+    pub async fn create_user_data(
+        &self,
+        user_id: impl AsRef<str>,
+        password: impl Into<String>,
+        ttl_seconds: u64,
+    ) -> Result<UserData, ApiError> {
+        let share = self.share();
+        let salt = share.get_salt(self.redis_client()).await?;
+        let user_data = UserData::create(self.share.argon2(), salt, password.into())?;
+        let user_key = format!("user:{}:data", user_id.as_ref());
+        let user_json = serde_json::to_string(&user_data)?;
+        let mut conn = self.connection_redis().await?;
+
+        redis::cmd("SET")
+            .arg(user_key.as_str())
+            .arg(user_json.as_str())
+            .arg("NX")
+            .arg("EX")
+            .arg(ttl_seconds)
+            .query_async::<()>(&mut conn)
+            .await?;
+        self.get_user_data(user_id.as_ref())
+            .await?
+            .ok_or_else(|| ApiError::Unexpected("Failed to create user data".to_string()))
+    }
+
+    pub async fn verify_user_password(
+        &self,
+        user_data: &UserData,
+        password: impl AsRef<str>,
+    ) -> Result<bool, ApiError> {
+        let share = self.share();
+        let password_hash = PasswordHash::new(&user_data.password_argon2)?;
+        let provided_password = password.as_ref().as_bytes();
+        match share
+            .argon2()
+            .verify_password(provided_password, &password_hash)
+        {
+            Ok(_) => Ok(true),
+            Err(_) => Ok(false),
+        }
+    }
+
+    pub async fn get_user_data(
+        &self,
+        user_id: impl AsRef<str>,
+    ) -> Result<Option<UserData>, ApiError> {
+        let user_key = format!("user:{}:data", user_id.as_ref());
+        let data: Option<String> = self
+            .redis_client
+            .get_multiplexed_async_connection()
+            .await?
+            .get(&user_key)
+            .await?;
+        match data {
+            Some(json) => {
+                let user_data = serde_json::from_str::<UserData>(&json)?;
+                Ok(Some(user_data))
+            }
+            None => Ok(None),
+        }
     }
 }

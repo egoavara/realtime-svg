@@ -2,24 +2,16 @@ use axum::{
     extract::{Path, State},
     Json,
 };
-use common::{auth::AuthenticatedUser, errors::ApiError, state::AppState};
+use common::{
+    auth::AuthenticatedUser, errors::ApiError, state::AppState, ListResponse, SessionInfo,
+};
 use serde::Serialize;
-
-#[derive(Debug, Serialize)]
-pub struct SessionListResponse {
-    sessions: Vec<SessionInfo>,
-}
-
-#[derive(Debug, Serialize)]
-pub struct SessionInfo {
-    session_id: String,
-}
 
 pub async fn handler(
     State(state): State<AppState>,
     AuthenticatedUser(user_id_from_token): AuthenticatedUser,
     Path(user_id): Path<String>,
-) -> Result<Json<SessionListResponse>, ApiError> {
+) -> Result<Json<ListResponse<SessionInfo>>, ApiError> {
     if user_id_from_token != user_id {
         tracing::warn!(
             "User {} attempted to list sessions of user {}",
@@ -39,5 +31,5 @@ pub async fn handler(
         .map(|session_id| SessionInfo { session_id })
         .collect();
 
-    Ok(Json(SessionListResponse { sessions }))
+    Ok(Json(ListResponse { items: sessions }))
 }

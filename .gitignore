@@ -29,3 +29,16 @@ crates/frontend/dist/
 .env
 
 dump.rdb
+
+# IDEs
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+./image.png

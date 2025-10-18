@@ -11,9 +11,12 @@ path = "src/lib.rs"
 serde = { workspace = true }
 serde_json = { workspace = true }
 yew = { version = "0.21", features = ["csr"] }
+yew-router = "0.18"
+base64 = "0.22"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 gloo-net = "0.4"
+gloo-timers = "0.3"
 wasm-logger = "0.2"
 log = "0.4"
 js-sys = "0.3"
@@ -26,4 +29,7 @@ web-sys = { version = "0.3", features = [
     "History",
     "Location",
     "Window",
+    "Storage",
+    "Navigator",
+    "Clipboard",
 ] }

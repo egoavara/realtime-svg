@@ -18,7 +18,7 @@ async fn main() -> anyhow::Result<()> {
 
     let state = AppState::new(redis_client.clone());
 
-    if let Err(e) = common::jwk::initialize_jwk_in_redis(&redis_client).await {
+    if let Err(e) = common::share::initialize_redis(&redis_client).await {
         return Err(anyhow::anyhow!(
             "Failed to initialize JWK in Redis: {:?}",
             e

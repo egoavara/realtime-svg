@@ -59,15 +59,19 @@
 				],
 			}
 		}
-	}
-	// Use 'mounts' to make the cargo cache persistent in a Docker Volume.
-	// "mounts": [
-	// 	{
-	// 		"source": "devcontainer-cargo-cache-${devcontainerId}",
-	// 		"target": "/usr/local/cargo",
-	// 		"type": "volume"
-	// 	}
-	// ]
+	},
+	"mounts": [
+		{
+			"source": "opencode-auth-${devcontainerId}",
+			"target": "/home/vscode/.local/share/opencode",
+			"type": "volume"
+		},
+		{
+			"source": "gh-config-${devcontainerId}",
+			"target": "/home/vscode/.config/gh",
+			"type": "volume"
+		}
+	]
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.

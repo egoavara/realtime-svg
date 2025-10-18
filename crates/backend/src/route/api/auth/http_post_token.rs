@@ -33,7 +33,10 @@ pub async fn handler(
         .verify_user_password(&user_data, &req.password)
         .await?
     {
-        return Err(ApiError::Unauthorized("Invalid credentials, 동일한 사용자명이 다른 사용자에 의해 점유되었을 수 있습니다.".to_string()));
+        return Err(ApiError::Unauthorized(
+            "Invalid credentials, 동일한 사용자명이 다른 사용자에 의해 점유되었을 수 있습니다."
+                .to_string(),
+        ));
     }
 
     let token = jwt::create_token(

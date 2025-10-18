@@ -1,14 +1,12 @@
-use gloo_net::http::Request;
 use crate::types::{PublicSessionCreateRequest, SessionDetail, SessionUpdateRequest};
+use gloo_net::http::Request;
 
 #[derive(serde::Deserialize)]
 pub struct CreatePublicSessionResponse {
     pub session_id: String,
 }
 
-pub async fn create_public_session(
-    request: PublicSessionCreateRequest,
-) -> Result<String, String> {
+pub async fn create_public_session(request: PublicSessionCreateRequest) -> Result<String, String> {
     let response = Request::post("/api/session")
         .header("Content-Type", "application/json")
         .json(&request)
@@ -16,7 +14,7 @@ pub async fn create_public_session(
         .send()
         .await
         .map_err(|e| format!("네트워크 오류: {}", e))?;
-    
+
     match response.status() {
         201 => {
             let create_response: CreatePublicSessionResponse = response
@@ -35,7 +33,7 @@ pub async fn get_public_session_detail(session_id: &str) -> Result<SessionDetail
         .send()
         .await
         .map_err(|e| format!("네트워크 오류: {}", e))?;
-    
+
     match response.status() {
         200 => {
             let detail: SessionDetail = response
@@ -60,7 +58,7 @@ pub async fn update_public_session(
         .send()
         .await
         .map_err(|e| format!("네트워크 오류: {}", e))?;
-    
+
     match response.status() {
         200 => Ok(()),
         404 => Err("세션을 찾을 수 없습니다".to_string()),

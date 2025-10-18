@@ -1,5 +1,5 @@
-use gloo_net::http::Request;
 use crate::types::TokenResponse;
+use gloo_net::http::Request;
 
 #[derive(serde::Serialize)]
 struct TokenRequest {
@@ -9,9 +9,17 @@ struct TokenRequest {
     ttl_seconds: Option<u64>,
 }
 
-pub async fn request_token(user_id: String, password: String, ttl_seconds: Option<u64>) -> Result<String, String> {
-    let request_body = TokenRequest { user_id, password, ttl_seconds };
-    
+pub async fn request_token(
+    user_id: String,
+    password: String,
+    ttl_seconds: Option<u64>,
+) -> Result<String, String> {
+    let request_body = TokenRequest {
+        user_id,
+        password,
+        ttl_seconds,
+    };
+
     let response = Request::post("/api/auth/token")
         .header("Content-Type", "application/json")
         .json(&request_body)
@@ -19,13 +27,13 @@ pub async fn request_token(user_id: String, password: String, ttl_seconds: Optio
         .send()
         .await
         .map_err(|e| format!("네트워크 오류: {}", e))?;
-    
+
     if response.ok() {
         let token_response: TokenResponse = response
             .json()
             .await
             .map_err(|e| format!("응답 파싱 실패: {}", e))?;
-        
+
         Ok(token_response.token)
     } else {
         let status = response.status();

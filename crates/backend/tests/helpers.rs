@@ -11,7 +11,7 @@ fn init_logger() {
         tracing_subscriber::fmt()
             .with_env_filter(
                 tracing_subscriber::EnvFilter::try_from_default_env()
-                    .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info"))
+                    .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
             )
             .with_test_writer()
             .init();
@@ -20,9 +20,8 @@ fn init_logger() {
 
 pub async fn create_test_app() -> Router {
     init_logger();
-    
-    let redis_url =
-        std::env::var("REDIS_URL").unwrap_or_else(|_| "redis://127.0.0.1/".to_string());
+
+    let redis_url = std::env::var("REDIS_URL").unwrap_or_else(|_| "redis://127.0.0.1/".to_string());
     let redis_client = Client::open(redis_url).unwrap();
 
     common::share::initialize_redis(&redis_client)
@@ -69,20 +68,20 @@ pub fn unique_session_id(prefix: &str) -> String {
 pub async fn create_expired_jwt(redis_client: &redis::Client, user_id: &str) -> String {
     use chrono::{Duration, Utc};
     use jsonwebtoken::{encode, Algorithm, Header};
-    
+
     let cache = common::share::ShareState::new();
     let encoding_key = cache.get_encoding_key(redis_client).await.unwrap();
-    
+
     let now = Utc::now();
     let exp = now - Duration::hours(2);
-    
+
     let claims = common::jwt::Claims {
         sub: user_id.to_string(),
         exp: exp.timestamp() as usize,
         iat: now.timestamp() as usize,
         iss: "realtime-svg".to_string(),
     };
-    
+
     let header = Header::new(Algorithm::RS256);
     encode(&header, &claims, encoding_key).unwrap()
 }

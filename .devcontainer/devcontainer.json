@@ -2,6 +2,7 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/rust
 {
 	"name": "Rust",
+	"remoteUser": "vscode",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
 	"features": {
@@ -19,6 +20,8 @@
 		"EDITOR": "code --wait"
 	},
 	"postStartCommand": "redis-server --daemonize yes",
+	"postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.local /home/vscode/.config",
+	"updateContentCommand": "sudo chown -R vscode:vscode /home/vscode/.local /home/vscode/.config",
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -63,12 +66,12 @@
 	"mounts": [
 		{
 			"source": "opencode-auth-${devcontainerId}",
-			"target": "/home/vscode/.local/share/opencode",
+			"target": "/home/vscode/.local",
 			"type": "volume"
 		},
 		{
 			"source": "gh-config-${devcontainerId}",
-			"target": "/home/vscode/.config/gh",
+			"target": "/home/vscode/.config",
 			"type": "volume"
 		}
 	]

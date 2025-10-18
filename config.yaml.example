@@ -1,0 +1,7 @@
+# Backend Server Configuration
+# 이 파일을 config.yaml로 복사하여 사용하세요
+
+redis_url: redis://127.0.0.1:6379/
+host: 127.0.0.1
+port: 3010
+log_level: info

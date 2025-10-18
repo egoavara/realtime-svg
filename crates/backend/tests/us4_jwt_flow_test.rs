@@ -1,6 +1,9 @@
 mod helpers;
 
-use axum::{body::Body, http::{Request, StatusCode}};
+use axum::{
+    body::Body,
+    http::{Request, StatusCode},
+};
 use serde_json::json;
 use tower::ServiceExt;
 
@@ -37,7 +40,7 @@ async fn test_invalid_token_rejection() {
     let session_id = helpers::unique_session_id("test");
 
     let invalid_token = "invalid.token.here";
-    
+
     let create_session_request = Request::builder()
         .method("POST")
         .uri(format!("/api/user/{}/session", user_id))
@@ -61,11 +64,11 @@ async fn test_invalid_token_rejection() {
 async fn test_expired_token_rejection() {
     let app = helpers::create_test_app().await;
     let user_id = helpers::unique_user_id("expired");
-    
+
     let redis_url = std::env::var("REDIS_URL").unwrap_or_else(|_| "redis://127.0.0.1/".to_string());
     let redis_client = redis::Client::open(redis_url).unwrap();
     let expired_token = helpers::create_expired_jwt(&redis_client, &user_id).await;
-    
+
     let session_id = helpers::unique_session_id("test");
     let create_session_request = Request::builder()
         .method("POST")

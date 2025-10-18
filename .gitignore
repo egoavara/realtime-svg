@@ -24,7 +24,6 @@ target
 # Added by cargo
 
 /target
-crates/frontend/dist/
 
 .env
 
@@ -42,3 +41,5 @@ dump.rdb
 Thumbs.db
 
 ./image.png
+
+crates/frontend/dist

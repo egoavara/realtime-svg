@@ -12,7 +12,7 @@ pub fn session_list_page() -> Html {
     let auth_context = use_context::<AuthContext>().expect("AuthContext must be provided");
     let navigator = use_navigator().expect("Navigator must be available");
 
-    let sessions = use_state(|| Vec::<SessionListItem>::new());
+    let sessions = use_state(Vec::<SessionListItem>::new);
     let error_message = use_state(|| None::<String>);
     let loading = use_state(|| false);
 

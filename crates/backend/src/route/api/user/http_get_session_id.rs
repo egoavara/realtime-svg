@@ -4,7 +4,6 @@ use axum::{
     Json,
 };
 use common::{auth::AuthenticatedUser, errors::ApiError, state::AppState, SessionDetailInfo};
-use serde::Serialize;
 
 pub async fn handler(
     Path((user_id, session_id)): Path<(String, String)>,

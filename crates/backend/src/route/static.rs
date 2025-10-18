@@ -29,12 +29,12 @@ pub async fn handler(Path(path): Path<String>) -> impl IntoResponse {
     let path = path.trim_start_matches('/');
     if let Some(file) = STATIC_ASSETS.get_file(path) {
         let mime_type = mime_guess::from_path(file.path()).first();
-        return serve_file(file, mime_type, Duration::days(30), None);
+        serve_file(file, mime_type, Duration::days(30), None)
     } else {
-        return Response::builder()
+        Response::builder()
             .status(StatusCode::NOT_FOUND)
             .header(header::CONTENT_TYPE, mime::TEXT_PLAIN.to_string())
             .body(Body::from("404 Not Found"))
-            .unwrap();
+            .unwrap()
     }
 }

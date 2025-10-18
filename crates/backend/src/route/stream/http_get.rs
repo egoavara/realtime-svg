@@ -103,10 +103,10 @@ fn encode_stream_frame(frame: &SvgFrame, duplicate: bool) -> Vec<u8> {
 }
 
 fn encode_multipart(frame: &SvgFrame) -> Vec<u8> {
-    let mut output = Vec::with_capacity(frame.content.as_bytes().len() + 2);
+    let mut output = Vec::with_capacity(frame.content.len() + 2);
     output.extend_from_slice(b"Content-Type: image/svg+xml\r\n");
     output.extend_from_slice(
-        format!("Content-Length: {}\r\n", frame.content.as_bytes().len()).as_bytes(),
+        format!("Content-Length: {}\r\n", frame.content.len()).as_bytes(),
     );
     output.extend_from_slice(b"\r\n");
     output.extend_from_slice(frame.content.as_bytes());

@@ -51,8 +51,13 @@ fn build_frontend_wasm(workspace_dir: &Path, frontend_dir: &Path) {
     }
 
     let cargo = env::var("CARGO").unwrap_or_else(|_| "cargo".to_string());
+    
+    // Use a separate target directory to avoid lock contention with parent cargo
+    let frontend_target_dir = workspace_dir.join("target/frontend-wasm");
+    
     let status = Command::new(&cargo)
         .current_dir(workspace_dir)
+        .env("CARGO_TARGET_DIR", &frontend_target_dir)
         .args([
             "build",
             "--release",
@@ -64,12 +69,11 @@ fn build_frontend_wasm(workspace_dir: &Path, frontend_dir: &Path) {
         ])
         .status()
         .expect("failed to invoke cargo to build frontend");
-
     if !status.success() {
         panic!("frontend wasm 빌드가 실패했습니다. 'rustup target add wasm32-unknown-unknown'을 먼저 실행하세요.");
     }
 
-    let wasm_path = workspace_dir.join("target/wasm32-unknown-unknown/release/frontend.wasm");
+    let wasm_path = frontend_target_dir.join("wasm32-unknown-unknown/release/frontend.wasm");
     if !wasm_path.exists() {
         panic!(
             "{} 경로에서 frontend.wasm을 찾을 수 없습니다.",

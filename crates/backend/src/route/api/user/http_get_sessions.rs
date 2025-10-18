@@ -5,7 +5,6 @@ use axum::{
 use common::{
     auth::AuthenticatedUser, errors::ApiError, state::AppState, ListResponse, SessionInfo,
 };
-use serde::Serialize;
 
 pub async fn handler(
     State(state): State<AppState>,

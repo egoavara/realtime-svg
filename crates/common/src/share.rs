@@ -1,4 +1,9 @@
+use std::sync::Arc;
+
+use argon2::password_hash::SaltString;
+use argon2::Argon2;
 use jsonwebtoken::{DecodingKey, EncodingKey};
+use redis::aio::MultiplexedConnection;
 use redis::AsyncCommands;
 use rsa::pkcs1::{EncodeRsaPrivateKey, EncodeRsaPublicKey};
 use rsa::RsaPrivateKey;
@@ -7,8 +12,9 @@ use tokio::sync::OnceCell;
 use crate::errors::ApiError;
 
 /// Redis keys for storing RSA key pair in PEM format
-const RSA_PRIVATE_PEM: &str = "rsa:private_pem";
-const RSA_PUBLIC_PEM: &str = "rsa:public_pem";
+const RSA_PRIVATE_PEM: &str = ".realtime-svg:rsa:private_pem";
+const RSA_PUBLIC_PEM: &str = ".realtime-svg:rsa:public_pem";
+const PASSWORD_SALT: &str = ".realtime-svg:password_salt";
 
 /// In-memory cache for JWK (JSON Web Key) encoding/decoding keys
 ///
@@ -18,17 +24,44 @@ const RSA_PUBLIC_PEM: &str = "rsa:public_pem";
 /// # Thread Safety
 /// Uses `Arc<OnceCell>` for thread-safe lazy initialization
 #[derive(Clone, Debug)]
-pub struct JwkCache {
-    encoding_key: std::sync::Arc<OnceCell<EncodingKey>>,
-    decoding_key: std::sync::Arc<OnceCell<DecodingKey>>,
+pub struct ShareState {
+    encoding_key: Arc<OnceCell<EncodingKey>>,
+    decoding_key: Arc<OnceCell<DecodingKey>>,
+    salt: Arc<OnceCell<SaltString>>,
+    argon2: Arc<Argon2<'static>>,
 }
 
-impl JwkCache {
+impl ShareState {
     pub fn new() -> Self {
         Self {
-            encoding_key: std::sync::Arc::new(OnceCell::new()),
-            decoding_key: std::sync::Arc::new(OnceCell::new()),
+            encoding_key: Arc::new(OnceCell::new()),
+            decoding_key: Arc::new(OnceCell::new()),
+            salt: Arc::new(OnceCell::new()),
+            argon2: Arc::new(Argon2::default()),
         }
+    }
+
+    pub fn argon2(&self) -> &Argon2<'static> {
+        &self.argon2
+    }
+
+    pub async fn get_salt(&self, redis: &redis::Client) -> Result<&SaltString, ApiError> {
+        self.salt
+            .get_or_try_init(|| async {
+                let mut conn = redis
+                    .get_multiplexed_async_connection()
+                    .await
+                    .map_err(|e| ApiError::RedisError(e.to_string()))?;
+                let salt_str: String = conn
+                    .get(PASSWORD_SALT)
+                    .await
+                    .map_err(|e| ApiError::RedisError(e.to_string()))?;
+                let salt = SaltString::from_b64(&salt_str).map_err(|e| {
+                    ApiError::InternalError(format!("Failed to create SaltString: {}", e))
+                })?;
+                Ok(salt)
+            })
+            .await
     }
 
     /// Gets the decoding key (RSA public key) for JWT verification
@@ -78,7 +111,7 @@ impl JwkCache {
     }
 }
 
-impl Default for JwkCache {
+impl Default for ShareState {
     fn default() -> Self {
         Self::new()
     }
@@ -103,12 +136,18 @@ impl Default for JwkCache {
 /// # Usage
 /// Should be called once during application startup before
 /// handling any requests that require JWT authentication.
-pub async fn initialize_jwk_in_redis(redis: &redis::Client) -> Result<(), ApiError> {
+pub async fn initialize_redis(redis: &redis::Client) -> Result<(), ApiError> {
     let mut conn = redis
         .get_multiplexed_async_connection()
         .await
         .map_err(|e| ApiError::RedisError(e.to_string()))?;
 
+    initialize_jwk(&mut conn).await?;
+    initialize_salt(&mut conn).await?;
+    Ok(())
+}
+
+async fn initialize_jwk(conn: &mut MultiplexedConnection) -> Result<(), ApiError> {
     let exists: bool = conn
         .exists(RSA_PRIVATE_PEM)
         .await
@@ -144,6 +183,32 @@ pub async fn initialize_jwk_in_redis(redis: &redis::Client) -> Result<(), ApiErr
         tracing::info!("Created new RSA keys in Redis");
     } else {
         tracing::info!("RSA keys were created by another instance");
+    }
+
+    Ok(())
+}
+
+async fn initialize_salt(conn: &mut MultiplexedConnection) -> Result<(), ApiError> {
+    let exists: bool = conn
+        .exists(PASSWORD_SALT)
+        .await
+        .map_err(|e| ApiError::RedisError(e.to_string()))?;
+
+    if exists {
+        tracing::info!("Password salt already exists in Redis");
+        return Ok(());
+    }
+
+    let salt = SaltString::generate(&mut rand::thread_rng());
+    let set: bool = conn
+        .set_nx(PASSWORD_SALT, salt.as_str())
+        .await
+        .map_err(|e| ApiError::RedisError(e.to_string()))?;
+
+    if set {
+        tracing::info!("Created new password salt in Redis");
+    } else {
+        tracing::info!("Password salt was created by another instance");
     }
 
     Ok(())

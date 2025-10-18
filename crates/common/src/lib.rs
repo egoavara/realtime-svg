@@ -5,10 +5,16 @@ use serde::{Deserialize, Serialize};
 pub mod auth;
 pub mod browser_engine;
 pub mod errors;
-pub mod jwk;
+pub mod share;
 pub mod jwt;
 pub mod session_data;
+pub mod user_data;
 pub mod state;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ListResponse<T: Serialize> {
+    pub items: Vec<T>,
+}
 
 /// 세션 관련 응답.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

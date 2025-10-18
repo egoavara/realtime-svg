@@ -6,7 +6,7 @@ async fn setup_test() -> (AppState, Client) {
     let redis_url = std::env::var("REDIS_URL").unwrap_or_else(|_| "redis://127.0.0.1/".to_string());
     let redis_client = Client::open(redis_url).unwrap();
 
-    common::jwk::initialize_jwk_in_redis(&redis_client)
+    common::share::initialize_redis(&redis_client)
         .await
         .unwrap();
 
@@ -104,18 +104,18 @@ async fn test_jwt_token_creation_and_verification() {
     let (state, _) = setup_test().await;
 
     let encoding_key = state
-        .jwk_cache()
+        .share()
         .get_encoding_key(state.redis_client())
         .await
         .unwrap();
 
     let decoding_key = state
-        .jwk_cache()
+        .share()
         .get_decoding_key(state.redis_client())
         .await
         .unwrap();
 
-    let token = jwt::create_token("test_user", encoding_key, None).unwrap();
+    let token = jwt::create_token("test_user", encoding_key, 3600).unwrap();
     let claims = jwt::verify_token(&token, decoding_key).unwrap();
 
     assert_eq!(claims.sub, "test_user");

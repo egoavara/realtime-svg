@@ -1,12 +1,13 @@
 use axum::{extract::State, http::StatusCode, Json};
-use common::{errors::ApiError, jwt, state::AppState};
+use common::{errors::ApiError, jwt, state::AppState, user_data::UserData};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize)]
 pub struct TokenRequest {
     user_id: String,
+    password: String,
     #[serde(default)]
-    ttl_seconds: Option<i64>,
+    ttl_seconds: Option<u64>,
 }
 
 #[derive(Debug, Serialize)]
@@ -23,15 +24,23 @@ pub async fn handler(
             "user_id cannot be empty".to_string(),
         ));
     }
-
-    let encoding_key = state
-        .jwk_cache()
-        .get_encoding_key(state.redis_client())
+    let ttl = req.ttl_seconds.unwrap_or(3600);
+    let user_data = state
+        .create_user_data(&req.user_id, &req.password, ttl)
         .await?;
 
-    let token = jwt::create_token(&req.user_id, encoding_key, req.ttl_seconds)?;
+    if !state
+        .verify_user_password(&user_data, &req.password)
+        .await?
+    {
+        return Err(ApiError::Unauthorized("Invalid credentials, 동일한 사용자명이 다른 사용자에 의해 점유되었을 수 있습니다.".to_string()));
+    }
 
-    tracing::info!("Issued JWT token for user: {}", req.user_id);
+    let token = jwt::create_token(
+        &req.user_id,
+        state.share().get_encoding_key(state.redis_client()).await?,
+        ttl,
+    )?;
 
     Ok((StatusCode::OK, Json(TokenResponse { token })))
 }

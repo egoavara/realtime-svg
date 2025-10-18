@@ -66,7 +66,7 @@ where
 
         let app_state = AppState::from_ref(state);
         let decoding_key = app_state
-            .jwk_cache()
+            .share()
             .get_decoding_key(app_state.redis_client())
             .await?;
 

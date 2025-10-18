@@ -40,3 +40,5 @@ dump.rdb
 # OS
 .DS_Store
 Thumbs.db
+
+./image.png

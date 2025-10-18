@@ -65,6 +65,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # release 라벨이 없으면 생성
+          if ! gh label list | grep -q "^release"; then
+            echo "release 라벨 생성 중..."
+            gh label create "release" --color "0E8A16" --description "릴리즈 관련 PR"
+          fi
+          
           PR_URL=$(gh pr create \
             --base release \
             --head pre-release/v${{ github.event.inputs.version }} \

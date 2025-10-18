@@ -172,8 +172,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ASSET_PATH="./target/${{ matrix.target }}/release/{{ env.BINARY_PATH }}${{ endsWith(matrix.asset_name_suffix, '.exe') && '.exe' || '' }}"
-          ASSET_NAME="{{ env.ASSET_NAME }}-${{ env.RELEASE_TAG }}-${{ matrix.asset_name_suffix }}"
+          ASSET_PATH="./target/${{ matrix.target }}/release/${{ env.BINARY_PATH }}${{ endsWith(matrix.asset_name_suffix, '.exe') && '.exe' || '' }}"
+          ASSET_NAME="${{ env.ASSET_NAME }}-${{ env.RELEASE_TAG }}-${{ matrix.asset_name_suffix }}"
           echo "Copying $ASSET_PATH to $ASSET_NAME for upload"
           cp "$ASSET_PATH" "$ASSET_NAME"
           echo "Uploading $ASSET_NAME to tag ${{ env.RELEASE_TAG }}"

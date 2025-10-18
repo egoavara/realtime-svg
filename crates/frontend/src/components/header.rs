@@ -1,28 +1,28 @@
+use crate::auth::storage::{LocalTokenStorage, TokenStorage};
+use crate::auth::{AuthContext, AuthState};
+use crate::routes::Route;
 use yew::prelude::*;
 use yew_router::prelude::*;
-use crate::auth::{AuthContext, AuthState};
-use crate::auth::storage::{TokenStorage, LocalTokenStorage};
-use crate::routes::Route;
 
 #[function_component(Header)]
 pub fn header() -> Html {
     let auth_context = use_context::<AuthContext>().expect("AuthContext must be provided");
-    
+
     let on_logout = {
         let auth_context = auth_context.clone();
-        
+
         Callback::from(move |_| {
             let storage = LocalTokenStorage::new();
             let _ = storage.remove_token();
             auth_context.set(AuthState::Anonymous);
         })
     };
-    
+
     html! {
         <header class="app-header">
             <div class="header-content">
                 <h1><Link<Route> to={Route::Home}>{"realtime-svg"}</Link<Route>></h1>
-                
+
                 <nav class="header-nav">
                     {match &*auth_context {
                         AuthState::Anonymous => html! {},
@@ -33,7 +33,7 @@ pub fn header() -> Html {
                         }
                     }}
                 </nav>
-                
+
                 <div class="auth-status">
                     {match &*auth_context {
                         AuthState::Anonymous => html! {

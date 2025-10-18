@@ -1,5 +1,7 @@
-use crate::types::{UserSessionCreateRequest, SessionDetail, SessionUpdateRequest, SessionListResponse};
 use crate::api::AuthenticatedRequest;
+use crate::types::{
+    SessionDetail, SessionListResponse, SessionUpdateRequest, UserSessionCreateRequest,
+};
 
 #[derive(serde::Deserialize)]
 pub struct CreateSessionResponse {
@@ -12,7 +14,7 @@ pub async fn create_user_session(
     request: UserSessionCreateRequest,
 ) -> Result<CreateSessionResponse, String> {
     let auth_req = AuthenticatedRequest::new();
-    
+
     let response = auth_req
         .post(&format!("/api/user/{}/session", user_id))
         .header("Content-Type", "application/json")
@@ -21,7 +23,7 @@ pub async fn create_user_session(
         .send()
         .await
         .map_err(|e| format!("네트워크 오류: {}", e))?;
-    
+
     match response.status() {
         201 => {
             let create_response: CreateSessionResponse = response
@@ -42,13 +44,13 @@ pub async fn get_user_session_detail(
     session_id: &str,
 ) -> Result<SessionDetail, String> {
     let auth_req = AuthenticatedRequest::new();
-    
+
     let response = auth_req
         .get(&format!("/api/user/{}/session/{}", user_id, session_id))
         .send()
         .await
         .map_err(|e| format!("네트워크 오류: {}", e))?;
-    
+
     match response.status() {
         200 => {
             let detail: SessionDetail = response
@@ -70,7 +72,7 @@ pub async fn update_user_session(
     request: SessionUpdateRequest,
 ) -> Result<(), String> {
     let auth_req = AuthenticatedRequest::new();
-    
+
     let response = auth_req
         .put(&format!("/api/user/{}/session/{}", user_id, session_id))
         .header("Content-Type", "application/json")
@@ -79,7 +81,7 @@ pub async fn update_user_session(
         .send()
         .await
         .map_err(|e| format!("네트워크 오류: {}", e))?;
-    
+
     match response.status() {
         204 => Ok(()),
         401 => Err("로그인이 필요합니다".to_string()),
@@ -91,13 +93,13 @@ pub async fn update_user_session(
 
 pub async fn list_user_sessions(user_id: &str) -> Result<SessionListResponse, String> {
     let auth_req = AuthenticatedRequest::new();
-    
+
     let response = auth_req
         .get(&format!("/api/user/{}/session", user_id))
         .send()
         .await
         .map_err(|e| format!("네트워크 오류: {}", e))?;
-    
+
     match response.status() {
         200 => {
             let list_response: SessionListResponse = response

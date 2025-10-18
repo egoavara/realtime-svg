@@ -1,4 +1,4 @@
-use common::{jwt, state::AppState, session_data::SessionData};
+use common::{jwt, session_data::SessionData, state::AppState};
 use redis::Client;
 use std::collections::HashMap;
 
@@ -23,11 +23,7 @@ async fn test_create_user_session_with_owner() {
     let mut args = HashMap::new();
     args.insert("test".to_string(), serde_json::json!("value"));
 
-    let session = SessionData::new_with_owner(
-        "<svg></svg>".to_string(),
-        args,
-        user_id.to_string(),
-    );
+    let session = SessionData::new_with_owner("<svg></svg>".to_string(), args, user_id.to_string());
 
     state
         .set_user_session(user_id, session_id, &session, 3600)
@@ -73,21 +69,15 @@ async fn test_list_sessions_filters_by_user() {
     let user1 = "filter_user1";
     let user2 = "filter_user2";
 
-    let session1 = SessionData::new_with_owner(
-        "<svg></svg>".to_string(),
-        HashMap::new(),
-        user1.to_string(),
-    );
+    let session1 =
+        SessionData::new_with_owner("<svg></svg>".to_string(), HashMap::new(), user1.to_string());
     state
         .set_user_session(user1, "session_1", &session1, 3600)
         .await
         .unwrap();
 
-    let session2 = SessionData::new_with_owner(
-        "<svg></svg>".to_string(),
-        HashMap::new(),
-        user2.to_string(),
-    );
+    let session2 =
+        SessionData::new_with_owner("<svg></svg>".to_string(), HashMap::new(), user2.to_string());
     state
         .set_user_session(user2, "session_2", &session2, 3600)
         .await

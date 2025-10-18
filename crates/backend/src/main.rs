@@ -1,5 +1,8 @@
+use std::str::FromStr;
+
 use anyhow::Context;
 use axum::Router;
+use common::config::Config;
 use common::state::AppState;
 use redis::Client;
 use tower_http::cors::CorsLayer;
@@ -11,10 +14,15 @@ pub mod route;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    init_tracing();
-    let redis_url = std::env::var("REDIS_URL").unwrap_or_else(|_| "redis://127.0.0.1/".to_string());
-    let redis_client = Client::open(redis_url.clone())
-        .with_context(|| format!("Redis에 연결할 수 없습니다: {redis_url}"))?;
+    dotenvy::dotenv().ok();
+    let config = Config::load().context("설정 로딩 실패")?;
+    config.validate().context("설정 검증 실패")?;
+    init_tracing(&config);
+
+    info!("서버 설정: {:?}", config);
+
+    let redis_client = Client::open(config.redis_url.clone())
+        .with_context(|| format!("Redis에 연결할 수 없습니다: {}", config.redis_url))?;
 
     let state = AppState::new(redis_client.clone());
 
@@ -32,19 +40,16 @@ async fn main() -> anyhow::Result<()> {
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http());
 
-    info!("서버 시작: http://127.0.0.1:3000");
-    axum::serve(
-        tokio::net::TcpListener::bind(("127.0.0.1", 3000)).await?,
-        app,
-    )
-    .await?;
+    let bind_addr = format!("{}:{}", config.host, config.port);
+    info!("서버 시작: http://{}", bind_addr);
+    axum::serve(tokio::net::TcpListener::bind(&bind_addr).await?, app).await?;
     Ok(())
 }
 
-fn init_tracing() {
+fn init_tracing(config: &Config) {
     if tracing::subscriber::set_global_default(
         tracing_subscriber::fmt()
-            .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+            .with_env_filter(tracing_subscriber::EnvFilter::from_str(&config.log_level).unwrap())
             .finish(),
     )
     .is_err()

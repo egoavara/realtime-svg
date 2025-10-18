@@ -1,9 +1,9 @@
-pub mod token;
 pub mod storage;
+pub mod token;
 
-use yew::prelude::*;
-use crate::auth::storage::{TokenStorage, LocalTokenStorage};
+use crate::auth::storage::{LocalTokenStorage, TokenStorage};
 use crate::auth::token::decode_claims;
+use yew::prelude::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum AuthState {
@@ -22,7 +22,7 @@ pub struct AuthProviderProps {
 #[function_component(AuthProvider)]
 pub fn auth_provider(props: &AuthProviderProps) -> Html {
     let storage = LocalTokenStorage::new();
-    
+
     let state = use_state(|| {
         if let Some(token) = storage.get_token() {
             if let Ok(claims) = decode_claims(&token) {
@@ -35,7 +35,7 @@ pub fn auth_provider(props: &AuthProviderProps) -> Html {
         }
         AuthState::Anonymous
     });
-    
+
     html! {
         <ContextProvider<AuthContext> context={state}>
             {props.children.clone()}

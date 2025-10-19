@@ -1,0 +1,140 @@
+# Default values for realtime-svg Helm chart
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Kubernetes namespace
+namespace: default
+
+# Container image configuration
+image:
+  repository: ghcr.io/egoavara/realtime-svg
+  tag: v0.1.4
+  pullPolicy: IfNotPresent
+  # pullSecrets: []
+
+# Number of replicas
+replicas: 2
+
+# Resource limits and requests
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Redis configuration
+redis:
+  # Enable in-cluster Redis deployment
+  # Set to false to use external Redis (recommended for production)
+  enabled: true
+  
+  # Redis image configuration (only used if enabled=true)
+  image:
+    repository: redis
+    tag: 8-alpine
+    pullPolicy: IfNotPresent
+  
+  # Redis password (leave empty for no authentication in dev)
+  password: ""
+  
+  # Resource limits for Redis (only used if enabled=true)
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  
+  # External Redis connection (only used if enabled=false)
+  external:
+    # Redis URL (required if enabled=false)
+    # Examples:
+    #   redis://redis.external.svc:6379/
+    #   redis://:password@redis.external.svc:6379/
+    #   rediss://redis.external.svc:6380/
+    url: ""
+
+# Ingress configuration
+ingress:
+  enabled: true
+  host: realtime-svg.example.com
+  path: /
+  pathType: Prefix
+  
+  # Custom annotations for ingress controller
+  annotations: {}
+    # Example for nginx-ingress:
+    # nginx.ingress.kubernetes.io/rewrite-target: /
+    # nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    
+    # Example for cert-manager:
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  
+  # TLS configuration
+  tls:
+    enabled: false
+    secretName: ""
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 80
+  # nodePort: 30080  # Only used if type is NodePort
+
+# Application configuration (injected via ConfigMap)
+config:
+  logLevel: info
+  port: 8080
+
+# Secrets (base64 encoded values)
+secrets:
+  # API key (optional)
+  apiKey: ""
+
+# Pod annotations
+podAnnotations: {}
+
+# Pod security context
+podSecurityContext: {}
+  # fsGroup: 2000
+
+# Container security context
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
+
+# Liveness probe configuration
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# Readiness probe configuration
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3

@@ -41,6 +41,32 @@ env:
   RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag_name || github.event.release.tag_name }}
 
 jobs:
+  prepare-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      binary-matrix: ${{ steps.set-matrix.outputs.binary-matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          EVENT="${{ github.event_name }}"
+          COMPONENT="${{ github.event.inputs.component }}"
+          
+          if [[ "$EVENT" == "push" ]]; then
+            BINARY_MATRIX='["binary.linux-gnu-amd64"]'
+          elif [[ "$EVENT" == "release" ]]; then
+            BINARY_MATRIX='["binary.windows-amd64","binary.linux-musl-amd64","binary.linux-musl-arm64","binary.linux-gnu-amd64","binary.linux-gnu-arm64"]'
+          elif [[ "$COMPONENT" == "<all>" || "$COMPONENT" == "binary" ]]; then
+            BINARY_MATRIX='["binary.windows-amd64","binary.linux-musl-amd64","binary.linux-musl-arm64","binary.linux-gnu-amd64","binary.linux-gnu-arm64"]'
+          elif [[ "$COMPONENT" == binary.* ]]; then
+            BINARY_MATRIX='["'$COMPONENT'"]'
+          else
+            BINARY_MATRIX='[]'
+          fi
+          
+          echo "binary-matrix=$BINARY_MATRIX" >> $GITHUB_OUTPUT
+          echo "Selected binary components: $BINARY_MATRIX"
+        shell: bash
+
   package-docker:
     name: Package Docker (linux/amd64, linux/arm64)
     runs-on: ubuntu-latest
@@ -98,57 +124,54 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   build-binaries:
+    needs: prepare-matrix
     name: Build Binary (${{ matrix.component_name }})
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
-    if: |
-      (github.event_name == 'push' && matrix.component_name == 'binary.linux-gnu-amd64') ||
-      (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v')) ||
-      (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.tag_name, 'v') && 
-       (github.event.inputs.component == '<all>' || 
-        github.event.inputs.component == 'binary' || 
-        github.event.inputs.component == matrix.component_name))
+    if: needs.prepare-matrix.outputs.binary-matrix != '[]'
     strategy:
       fail-fast: false
       matrix:
+        component_name: ${{ fromJSON(needs.prepare-matrix.outputs.binary-matrix) }}
         include:
-          - os: windows-latest
+          - component_name: binary.windows-amd64
+            os: windows-latest
             target: x86_64-pc-windows-msvc
             asset_name_suffix: windows-amd64.exe
             asset_content_type: application/vnd.microsoft.portable-executable
             rustflags: ""
             needs_linker_install: false
-            component_name: binary.windows-amd64
-          - os: ubuntu-latest
+          - component_name: binary.linux-musl-amd64
+            os: ubuntu-latest
             target: x86_64-unknown-linux-musl
             asset_name_suffix: linux-musl-amd64
             asset_content_type: application/octet-stream
             needs_linker_install: true
             linker: musl-gcc
             linker_install_cmd: sudo apt-get update && sudo apt-get install -y musl-tools musl-dev
-            component_name: binary.linux-musl-amd64
-          - os: ubuntu-latest
+          - component_name: binary.linux-musl-arm64
+            os: ubuntu-latest
             target: aarch64-unknown-linux-musl
             asset_name_suffix: linux-musl-arm64
             asset_content_type: application/octet-stream
             needs_linker_install: true
             zig_install: true
             linker_install_cmd: cargo install --locked cargo-zigbuild
-            component_name: binary.linux-musl-arm64
-          - os: ubuntu-latest
+          - component_name: binary.linux-gnu-amd64
+            os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             asset_name_suffix: linux-gnu-amd64
             asset_content_type: application/octet-stream
-            component_name: binary.linux-gnu-amd64
-          - os: ubuntu-latest
+            needs_linker_install: false
+          - component_name: binary.linux-gnu-arm64
+            os: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             asset_name_suffix: linux-gnu-arm64
             asset_content_type: application/octet-stream
             needs_linker_install: true
             linker: aarch64-linux-gnu-gcc
             linker_install_cmd: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu
-            component_name: binary.linux-gnu-arm64
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -202,7 +225,7 @@ jobs:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: ${{ matrix.linker }}
 
       - name: Upload Release Asset (using gh cli)
-        if: github.event_name != 'push'
+        if: github.event_name != 'push' && (startsWith(github.event.release.tag_name, 'v') || startsWith(github.event.inputs.tag_name, 'v'))
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

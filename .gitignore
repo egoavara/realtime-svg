@@ -41,7 +41,7 @@ dump.rdb
 .DS_Store
 Thumbs.db
 
-./image.png
+image.png
 
 crates/frontend/dist
 

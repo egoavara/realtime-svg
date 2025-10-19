@@ -2,9 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "realtime-svg.fullname" . }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "realtime-svg.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
 spec:
   replicas: {{ .Values.replicas }}
   strategy:
@@ -15,6 +16,7 @@ spec:
   selector:
     matchLabels:
       {{- include "realtime-svg.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
   template:
     metadata:
       annotations:
@@ -25,6 +27,7 @@ spec:
         {{- end }}
       labels:
         {{- include "realtime-svg.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: backend
     spec:
       {{- with .Values.podSecurityContext }}
       securityContext:

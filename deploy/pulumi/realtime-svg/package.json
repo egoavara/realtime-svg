@@ -1,6 +1,6 @@
 {
   "name": "realtime-svg-pulumi",
-  "version": "0.1.0",
+  "version": "0.1.5",
   "description": "Reusable Pulumi module for deploying realtime-svg to Kubernetes",
   "main": "target/index.js",
   "types": "target/index.d.ts",

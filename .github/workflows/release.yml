@@ -258,6 +258,7 @@ jobs:
           VERSION="${{ env.RELEASE_TAG }}"
           VERSION_NO_V="${VERSION#v}"
           CHART_FILE="realtime-svg-helm-${VERSION_NO_V}.tgz"
+          mv "realtime-svg-${VERSION_NO_V}.tgz" "$CHART_FILE"
           echo "Uploading $CHART_FILE to tag ${{ env.RELEASE_TAG }}"
           gh release upload "${{ env.RELEASE_TAG }}" "$CHART_FILE" --clobber
 

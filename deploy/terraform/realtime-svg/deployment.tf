@@ -2,7 +2,7 @@ resource "kubernetes_deployment" "realtime_svg" {
   metadata {
     name      = local.app_name
     namespace = var.namespace
-    labels    = local.labels
+    labels    = local.backend_labels
   }
 
   spec {
@@ -18,14 +18,15 @@ resource "kubernetes_deployment" "realtime_svg" {
 
     selector {
       match_labels = {
-        "app.kubernetes.io/name"     = local.app_name
-        "app.kubernetes.io/instance" = local.app_name
+        "app.kubernetes.io/name"      = local.app_name
+        "app.kubernetes.io/instance"  = local.app_name
+        "app.kubernetes.io/component" = "backend"
       }
     }
 
     template {
       metadata {
-        labels = local.labels
+        labels = local.backend_labels
         annotations = {
           "checksum/config" = sha256(jsonencode(kubernetes_config_map.realtime_svg.data))
           "checksum/secret" = sha256(jsonencode(kubernetes_secret.realtime_svg.data))
@@ -134,15 +135,16 @@ resource "kubernetes_service" "realtime_svg" {
   metadata {
     name      = local.app_name
     namespace = var.namespace
-    labels    = local.labels
+    labels    = local.backend_labels
   }
 
   spec {
     type = var.service_type
 
     selector = {
-      "app.kubernetes.io/name"     = local.app_name
-      "app.kubernetes.io/instance" = local.app_name
+      "app.kubernetes.io/name"      = local.app_name
+      "app.kubernetes.io/instance"  = local.app_name
+      "app.kubernetes.io/component" = "backend"
     }
 
     port {

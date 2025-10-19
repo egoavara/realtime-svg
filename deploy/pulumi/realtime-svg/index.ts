@@ -78,6 +78,16 @@ export class RealtimeSvg extends pulumi.ComponentResource {
             "app.kubernetes.io/managed-by": "pulumi",
         };
 
+        const backendLabels = {
+            ...labels,
+            "app.kubernetes.io/component": "backend",
+        };
+
+        const redisLabels = {
+            ...labels,
+            "app.kubernetes.io/component": "redis",
+        };
+
         const redisUrl = pulumi.all([redisEnabled, redisPassword, redisExternalUrl]).apply(([enabled, password, externalUrl]) => 
             enabled 
                 ? (password 
@@ -113,7 +123,7 @@ export class RealtimeSvg extends pulumi.ComponentResource {
             metadata: {
                 name: appName,
                 namespace: namespace,
-                labels: labels,
+                labels: backendLabels,
             },
             spec: {
                 replicas: replicas,
@@ -128,11 +138,12 @@ export class RealtimeSvg extends pulumi.ComponentResource {
                     matchLabels: {
                         "app.kubernetes.io/name": appName,
                         "app.kubernetes.io/instance": appName,
+                        "app.kubernetes.io/component": "backend",
                     },
                 },
                 template: {
                     metadata: {
-                        labels: labels,
+                        labels: backendLabels,
                     },
                     spec: {
                         containers: [{
@@ -214,13 +225,14 @@ export class RealtimeSvg extends pulumi.ComponentResource {
             metadata: {
                 name: appName,
                 namespace: namespace,
-                labels: labels,
+                labels: backendLabels,
             },
             spec: {
                 type: serviceType,
                 selector: {
                     "app.kubernetes.io/name": appName,
                     "app.kubernetes.io/instance": appName,
+                    "app.kubernetes.io/component": "backend",
                 },
                 ports: [{
                     name: "http",
@@ -236,10 +248,7 @@ export class RealtimeSvg extends pulumi.ComponentResource {
                 metadata: {
                     name: `${appName}-redis`,
                     namespace: namespace,
-                    labels: {
-                        ...labels,
-                        "app.kubernetes.io/component": "redis",
-                    },
+                    labels: redisLabels,
                 },
                 spec: {
                     replicas: 1,
@@ -252,10 +261,7 @@ export class RealtimeSvg extends pulumi.ComponentResource {
                     },
                     template: {
                         metadata: {
-                            labels: {
-                                ...labels,
-                                "app.kubernetes.io/component": "redis",
-                            },
+                            labels: redisLabels,
                         },
                         spec: {
                             containers: [{
@@ -292,10 +298,7 @@ export class RealtimeSvg extends pulumi.ComponentResource {
                 metadata: {
                     name: `${appName}-redis`,
                     namespace: namespace,
-                    labels: {
-                        ...labels,
-                        "app.kubernetes.io/component": "redis",
-                    },
+                    labels: redisLabels,
                 },
                 spec: {
                     type: "ClusterIP",

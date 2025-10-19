@@ -323,8 +323,8 @@ jobs:
         run: |
           VERSION="${{ env.RELEASE_TAG }}"
           VERSION_NO_V="${VERSION#v}"
-          cd deploy/terraform
-          tar -czf "realtime-svg-terraform-${VERSION_NO_V}.tar.gz" realtime-svg/
+          cd deploy/terraform/realtime-svg
+          tar -czf "../realtime-svg-terraform-${VERSION_NO_V}.tar.gz" .
 
       - name: Upload Terraform module to release
         env:

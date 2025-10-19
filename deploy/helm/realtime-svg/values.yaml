@@ -2,9 +2,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# Kubernetes namespace
-namespace: default
-
 # Container image configuration
 image:
   repository: ghcr.io/egoavara/realtime-svg

@@ -113,6 +113,7 @@ metadata:
     app.kubernetes.io/name: realtime-svg
     app.kubernetes.io/instance: realtime-svg
     app.kubernetes.io/version: v0.1.4
+    app.kubernetes.io/component: backend
 spec:
   replicas: 2
   strategy:
@@ -124,12 +125,14 @@ spec:
     matchLabels:
       app.kubernetes.io/name: realtime-svg
       app.kubernetes.io/instance: realtime-svg
+      app.kubernetes.io/component: backend
   template:
     metadata:
       labels:
         app.kubernetes.io/name: realtime-svg
         app.kubernetes.io/instance: realtime-svg
         app.kubernetes.io/version: v0.1.4
+        app.kubernetes.io/component: backend
     spec:
       containers:
       - name: realtime-svg
@@ -190,11 +193,13 @@ metadata:
     app.kubernetes.io/name: realtime-svg
     app.kubernetes.io/instance: realtime-svg
     app.kubernetes.io/version: v0.1.4
+    app.kubernetes.io/component: backend
 spec:
   type: ClusterIP
   selector:
     app.kubernetes.io/name: realtime-svg
     app.kubernetes.io/instance: realtime-svg
+    app.kubernetes.io/component: backend
   ports:
   - name: http
     port: 80

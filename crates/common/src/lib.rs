@@ -11,6 +11,7 @@ pub mod session_data;
 pub mod share;
 pub mod state;
 pub mod user_data;
+pub mod whoami;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ListResponse<T: Serialize> {

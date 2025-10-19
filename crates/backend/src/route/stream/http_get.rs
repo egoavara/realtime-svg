@@ -4,25 +4,34 @@ use axum::{
     body::Body,
     extract::{Path, Query, State},
     http::{header, HeaderMap, HeaderValue, Response, StatusCode},
-    response::IntoResponse,
+    response::{IntoResponse, Redirect},
 };
 use bytes::Bytes;
-use common::{browser_engine::WellKnownBrowserEngine, errors::ApiError, state::AppState, SvgFrame};
+use common::{
+    browser_engine::WellKnownBrowserEngine, errors::ApiError, state::AppState,
+    whoami::ExtractWhoAmI, SvgFrame,
+};
 use tokio::sync::mpsc;
 use tokio_stream::{once, wrappers::ReceiverStream, StreamExt};
-use tracing::error;
+use tracing::{error, warn};
 
 #[derive(serde::Deserialize)]
 pub struct QueryParams {
     double_frame: Option<bool>,
+    as_bot: Option<bool>,
 }
 
 pub async fn handler(
     Path(session_id): Path<String>,
+    ExtractWhoAmI(whoami): ExtractWhoAmI,
     State(state): State<AppState>,
     headers: HeaderMap,
     Query(query): Query<QueryParams>,
 ) -> Result<impl IntoResponse, ApiError> {
+    if query.as_bot != Some(true) && whoami == common::whoami::WhoAmI::Human {
+        return Ok(Redirect::temporary(&format!("/session/{}", session_id)).into_response());
+    }
+
     let session = state
         .get_session(&session_id)
         .await?
@@ -105,9 +114,7 @@ fn encode_stream_frame(frame: &SvgFrame, duplicate: bool) -> Vec<u8> {
 fn encode_multipart(frame: &SvgFrame) -> Vec<u8> {
     let mut output = Vec::with_capacity(frame.content.len() + 2);
     output.extend_from_slice(b"Content-Type: image/svg+xml\r\n");
-    output.extend_from_slice(
-        format!("Content-Length: {}\r\n", frame.content.len()).as_bytes(),
-    );
+    output.extend_from_slice(format!("Content-Length: {}\r\n", frame.content.len()).as_bytes());
     output.extend_from_slice(b"\r\n");
     output.extend_from_slice(frame.content.as_bytes());
     output.extend_from_slice(b"\r\n");

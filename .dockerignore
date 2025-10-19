@@ -93,3 +93,9 @@ coverage/
 dump.rdb       # Redis dump file
 *.db
 *.sqlite
+
+# ============================================================================
+# Deployment configurations (not needed in image)
+# ============================================================================
+deploy/
+.specify/

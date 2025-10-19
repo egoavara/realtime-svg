@@ -1,0 +1,69 @@
+# Common Values Schema for realtime-svg Deployment
+# This schema is used by all deployment methods: Helm, Terraform, Pulumi, kubectl
+#
+# Version: 1.0.0
+# Last Updated: 2025-10-19
+
+namespace: default
+
+image:
+  repository: ghcr.io/egoavara/realtime-svg
+  tag: v0.1.4
+  pullPolicy: IfNotPresent
+
+replicas: 2
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+redis:
+  # When enabled=true, uses Bitnami Redis chart as dependency
+  enabled: true
+  
+  # Bitnami Redis configuration (when enabled=true)
+  architecture: standalone
+  auth:
+    enabled: false
+    password: ""
+  master:
+    persistence:
+      enabled: false  # In-memory for dev/test
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+  
+  # External Redis configuration (when enabled=false)
+  external:
+    host: ""  # Required if enabled=false
+    port: 6379
+    password: ""
+
+ingress:
+  enabled: true
+  host: realtime-svg.example.com
+  path: /
+  pathType: Prefix
+  annotations: {}
+  tls:
+    enabled: false
+    secretName: ""
+
+service:
+  type: ClusterIP
+  port: 8080
+
+config:
+  logLevel: info
+  port: 8080
+
+secrets:
+  apiKey: ""  # base64 encoded

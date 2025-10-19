@@ -4,12 +4,7 @@ resource "kubernetes_deployment" "redis" {
   metadata {
     name      = "${local.app_name}-redis"
     namespace = var.namespace
-    labels = merge(
-      local.labels,
-      {
-        "app.kubernetes.io/component" = "redis"
-      }
-    )
+    labels    = local.redis_labels
   }
 
   spec {
@@ -25,12 +20,7 @@ resource "kubernetes_deployment" "redis" {
 
     template {
       metadata {
-        labels = merge(
-          local.labels,
-          {
-            "app.kubernetes.io/component" = "redis"
-          }
-        )
+        labels = local.redis_labels
       }
 
       spec {
@@ -125,12 +115,7 @@ resource "kubernetes_service" "redis" {
   metadata {
     name      = "${local.app_name}-redis"
     namespace = var.namespace
-    labels = merge(
-      local.labels,
-      {
-        "app.kubernetes.io/component" = "redis"
-      }
-    )
+    labels    = local.redis_labels
   }
 
   spec {

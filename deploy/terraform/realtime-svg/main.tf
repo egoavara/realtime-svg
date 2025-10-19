@@ -9,6 +9,20 @@ locals {
     },
     var.labels
   )
+  
+  backend_labels = merge(
+    local.labels,
+    {
+      "app.kubernetes.io/component" = "backend"
+    }
+  )
+  
+  redis_labels = merge(
+    local.labels,
+    {
+      "app.kubernetes.io/component" = "redis"
+    }
+  )
 
   redis_url = var.redis_enabled ? (
     var.redis_password != "" ?

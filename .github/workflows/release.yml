@@ -243,11 +243,9 @@ jobs:
         run: |
           VERSION="${{ env.RELEASE_TAG }}"
           VERSION_NO_V="${VERSION#v}"
-          cd deploy/pulumi/realtime-svg
           PACKAGE_FILE="realtime-svg-pulumi-${VERSION_NO_V}.tgz"
-          mv realtime-svg-pulumi-${VERSION_NO_V}.tgz "$PACKAGE_FILE"
           echo "Uploading $PACKAGE_FILE to tag ${{ env.RELEASE_TAG }}"
-          gh release upload "${{ env.RELEASE_TAG }}" "$PACKAGE_FILE" --clobber
+          gh release upload "${{ env.RELEASE_TAG }}" "deploy/pulumi/realtime-svg/$PACKAGE_FILE" --clobber
 
   package-terraform:
     name: Package Terraform Module

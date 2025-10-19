@@ -152,7 +152,7 @@ jobs:
 
       - name: Build (Linux arm64 MUSL)
         if: matrix.target == 'aarch64-unknown-linux-musl'
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo zigbuild --release --target ${{ matrix.target }}
         env:
           CC_aarch64_unknown_linux_musl: ${{ matrix.linker }}
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: ${{ matrix.linker }}

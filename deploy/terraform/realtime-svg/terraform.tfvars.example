@@ -1,0 +1,80 @@
+# Example Terraform Variables for realtime-svg Deployment
+# Copy this file to terraform.tfvars and customize the values
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform init
+#   terraform plan
+#   terraform apply
+
+# Kubernetes namespace
+namespace = "default"
+
+# Container image configuration
+image_repository  = "ghcr.io/egoavara/realtime-svg"
+image_tag         = "v0.1.4"
+image_pull_policy = "IfNotPresent"
+
+# Number of replicas
+replicas = 2
+
+# Resource limits
+resources_requests_cpu    = "100m"
+resources_requests_memory = "128Mi"
+resources_limits_cpu      = "500m"
+resources_limits_memory   = "512Mi"
+
+# Redis configuration
+# Option 1: Use in-cluster Redis (for development)
+redis_enabled = true
+redis_password = ""  # Leave empty for no password
+
+# Option 2: Use external Redis (for production)
+# redis_enabled = false
+# redis_external_url = "redis://redis.production.svc:6379/"
+# redis_external_url = "redis://:password@redis.production.svc:6379/"
+
+# Redis resources (only used if redis_enabled=true)
+redis_resources_requests_cpu    = "100m"
+redis_resources_requests_memory = "128Mi"
+redis_resources_limits_cpu      = "200m"
+redis_resources_limits_memory   = "256Mi"
+
+# Ingress configuration
+ingress_enabled   = true
+ingress_host      = "realtime-svg.example.com"
+ingress_path      = "/"
+ingress_path_type = "Prefix"
+
+# Ingress annotations (customize for your ingress controller)
+ingress_annotations = {
+  # Example for nginx-ingress
+  # "nginx.ingress.kubernetes.io/rewrite-target" = "/"
+  # "nginx.ingress.kubernetes.io/ssl-redirect"   = "true"
+
+  # Example for cert-manager
+  # "cert-manager.io/cluster-issuer" = "letsencrypt-prod"
+}
+
+# TLS configuration
+ingress_tls_enabled     = false
+ingress_tls_secret_name = ""
+# ingress_tls_secret_name = "realtime-svg-tls"  # Uncomment if TLS is enabled
+
+# Service configuration
+service_type = "ClusterIP"
+service_port = 80
+
+# Application configuration
+config_log_level = "info"
+config_port      = 8080
+
+# Secrets (optional)
+# secret_api_key = "my-api-key"
+
+# Additional labels
+labels = {
+  # "environment" = "production"
+  # "team"        = "platform"
+}

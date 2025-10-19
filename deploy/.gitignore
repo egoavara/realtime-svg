@@ -1,0 +1,27 @@
+# Terraform state files
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+.terraform.lock.hcl
+
+# Pulumi
+.pulumi/
+Pulumi.*.yaml
+!Pulumi.dev.yaml
+
+# Helm packaged charts
+*.tgz
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log

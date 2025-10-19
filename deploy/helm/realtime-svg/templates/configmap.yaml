@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "realtime-svg.fullname" . }}-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "realtime-svg.labels" . | nindent 4 }}
+data:
+  REDIS_URL: {{ include "realtime-svg.redisUrl" . | quote }}
+  LOG_LEVEL: {{ .Values.config.logLevel | quote }}
+  PORT: {{ .Values.config.port | quote }}

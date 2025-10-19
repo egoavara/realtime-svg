@@ -33,6 +33,19 @@ jobs:
           echo "Cargo.toml 버전 업데이트 완료"
           grep "^version =" Cargo.toml
 
+      - name: Helm Chart.yaml 버전 업데이트
+        run: |
+          sed -i "s/^version:.*/version: ${{ github.event.inputs.version }}/" deploy/helm/realtime-svg/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: \"v${{ github.event.inputs.version }}\"/" deploy/helm/realtime-svg/Chart.yaml
+          echo "Helm Chart.yaml 버전 업데이트 완료"
+          grep -E "^(version|appVersion):" deploy/helm/realtime-svg/Chart.yaml
+
+      - name: Pulumi package.json 버전 업데이트
+        run: |
+          sed -i "s/\"version\": \".*\"/\"version\": \"${{ github.event.inputs.version }}\"/" deploy/pulumi/realtime-svg/package.json
+          echo "Pulumi package.json 버전 업데이트 완료"
+          grep "\"version\":" deploy/pulumi/realtime-svg/package.json
+
       - name: 변경된 파일 확인
         run: git status -s
 

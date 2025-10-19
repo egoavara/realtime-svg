@@ -1,0 +1,27 @@
+{
+  "name": "realtime-svg-pulumi",
+  "version": "0.1.5",
+  "description": "Reusable Pulumi module for deploying realtime-svg to Kubernetes",
+  "main": "target/index.js",
+  "types": "target/index.d.ts",
+  "files": [
+    "target/**",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@pulumi/pulumi": "^3.0.0",
+    "@pulumi/kubernetes": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@pulumi/pulumi": "^3.0.0",
+    "@pulumi/kubernetes": "^4.0.0"
+  }
+}

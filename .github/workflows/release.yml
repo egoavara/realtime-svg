@@ -101,12 +101,8 @@ jobs:
             asset_name_suffix: linux-musl-arm64
             asset_content_type: application/octet-stream
             needs_linker_install: true
-            linker: aarch64-linux-musl-gcc
-            linker_install_cmd: |
-              sudo apt-get update && sudo apt-get install -y curl
-              curl -O -L https://musl.cc/aarch64-linux-musl-cross.tgz
-              sudo tar xf aarch64-linux-musl-cross.tgz -C /opt
-              echo "/opt/aarch64-linux-musl-cross/bin" | sudo tee -a $GITHUB_PATH
+            zig_install: true
+            linker_install_cmd: cargo install --locked cargo-zigbuild
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             asset_name_suffix: linux-gnu-amd64
@@ -132,6 +128,10 @@ jobs:
           target: ${{ matrix.target }}
           rustflags: ${{ matrix.rustflags }}
 
+      - name: Install zig if needed
+        if: matrix.zig_install
+        uses: mlugg/setup-zig@v2
+
       - name: Install cross-linker if needed
         if: matrix.needs_linker_install
         run: ${{ matrix.linker_install_cmd }}
@@ -151,10 +151,8 @@ jobs:
 
       - name: Build (Linux arm64 MUSL)
         if: matrix.target == 'aarch64-unknown-linux-musl'
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo zigbuild --release --target ${{ matrix.target }}
         env:
-          CC_aarch64_unknown_linux_musl: ${{ matrix.linker }}
-          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER: ${{ matrix.linker }}
           CFLAGS_aarch64_unknown_linux_musl: "-std=c11 -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0"
 
       - name: Build (Linux amd64 GNU)
@@ -178,4 +176,128 @@ jobs:
           cp "$ASSET_PATH" "$ASSET_NAME"
           echo "Uploading $ASSET_NAME to tag ${{ env.RELEASE_TAG }}"
           gh release upload "${{ env.RELEASE_TAG }}" "$ASSET_NAME" --clobber
-        shell: bash 
+        shell: bash
+
+  package-helm:
+    name: Package Helm Chart
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.tag_name, 'v')) || (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v'))
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'latest'
+
+      - name: Package Helm chart
+        run: |
+          helm package deploy/helm/realtime-svg -d .
+
+      - name: Upload Helm chart to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ env.RELEASE_TAG }}"
+          VERSION_NO_V="${VERSION#v}"
+          CHART_FILE="realtime-svg-${VERSION_NO_V}.tgz"
+          echo "Uploading $CHART_FILE to tag ${{ env.RELEASE_TAG }}"
+          gh release upload "${{ env.RELEASE_TAG }}" "$CHART_FILE" --clobber
+
+  package-pulumi:
+    name: Package Pulumi Module
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.tag_name, 'v')) || (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v'))
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies and build
+        run: |
+          cd deploy/pulumi/realtime-svg
+          npm install
+          npm run build
+
+      - name: Create npm package tarball
+        run: |
+          cd deploy/pulumi/realtime-svg
+          npm pack
+
+      - name: Upload Pulumi package to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ env.RELEASE_TAG }}"
+          VERSION_NO_V="${VERSION#v}"
+          cd deploy/pulumi/realtime-svg
+          PACKAGE_FILE="realtime-svg-pulumi-${VERSION_NO_V}.tgz"
+          mv realtime-svg-pulumi-${VERSION_NO_V}.tgz "$PACKAGE_FILE"
+          echo "Uploading $PACKAGE_FILE to tag ${{ env.RELEASE_TAG }}"
+          gh release upload "${{ env.RELEASE_TAG }}" "$PACKAGE_FILE" --clobber
+
+  package-terraform:
+    name: Package Terraform Module
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.tag_name, 'v')) || (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v'))
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: Create Terraform module archive
+        run: |
+          VERSION="${{ env.RELEASE_TAG }}"
+          VERSION_NO_V="${VERSION#v}"
+          cd deploy/terraform
+          tar -czf "realtime-svg-terraform-${VERSION_NO_V}.tar.gz" realtime-svg/
+
+      - name: Upload Terraform module to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ env.RELEASE_TAG }}"
+          VERSION_NO_V="${VERSION#v}"
+          cd deploy/terraform
+          TERRAFORM_FILE="realtime-svg-terraform-${VERSION_NO_V}.tar.gz"
+          echo "Uploading $TERRAFORM_FILE to tag ${{ env.RELEASE_TAG }}"
+          gh release upload "${{ env.RELEASE_TAG }}" "$TERRAFORM_FILE" --clobber
+
+  package-kubernetes:
+    name: Package Kubernetes Manifests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: (github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.tag_name, 'v')) || (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v'))
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: Upload Kubernetes install.yaml to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ env.RELEASE_TAG }}"
+          VERSION_NO_V="${VERSION#v}"
+          K8S_FILE="realtime-svg-kubernetes-${VERSION_NO_V}.yaml"
+          cp deploy/kubernetes/realtime-svg/install.yaml "$K8S_FILE"
+          echo "Uploading $K8S_FILE to tag ${{ env.RELEASE_TAG }}"
+          gh release upload "${{ env.RELEASE_TAG }}" "$K8S_FILE" --clobber 

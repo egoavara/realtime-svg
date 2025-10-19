@@ -35,6 +35,7 @@ dump.rdb
 
 # Logs
 *.log
+.tmp
 
 # OS
 .DS_Store
@@ -43,3 +44,18 @@ Thumbs.db
 ./image.png
 
 crates/frontend/dist
+
+# Deployment artifacts
+deploy/**/*.tgz
+deploy/helm/**/charts/
+deploy/helm/**/Chart.lock
+deploy/terraform/.terraform/
+deploy/terraform/*.tfstate
+deploy/terraform/*.tfstate.*
+deploy/terraform/*.tfvars
+!deploy/terraform/*.tfvars.example
+deploy/terraform/.terraform.lock.hcl
+deploy/pulumi/.pulumi/
+deploy/pulumi/Pulumi.*.yaml
+!deploy/pulumi/Pulumi.dev.yaml
+deploy/pulumi/node_modules/

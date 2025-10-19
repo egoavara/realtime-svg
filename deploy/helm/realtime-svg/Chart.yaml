@@ -1,0 +1,27 @@
+apiVersion: v2
+name: realtime-svg
+description: A Helm chart for realtime-svg - Real-time SVG streaming application
+type: application
+version: 0.1.5
+appVersion: "v0.1.5"
+
+keywords:
+  - realtime-svg
+  - streaming
+  - svg
+  - websocket
+  - redis
+
+home: https://github.com/egoavara/realtime-svg
+sources:
+  - https://github.com/egoavara/realtime-svg
+
+maintainers:
+  - name: realtime-svg team
+    email: maintainers@example.com
+
+icon: https://raw.githubusercontent.com/egoavara/realtime-svg/main/docs/logo.png
+
+annotations:
+  category: Application
+  licenses: MIT

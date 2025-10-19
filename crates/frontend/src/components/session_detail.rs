@@ -9,6 +9,57 @@ use crate::auth::storage::{LocalTokenStorage, TokenStorage};
 use crate::auth::{AuthContext, AuthState};
 use crate::types::{SessionDetail, SessionUpdateRequest};
 
+fn update_meta_tags(session_id: &str, stream_url: &str) {
+    if let Some(window) = web_sys::window() {
+        if let Some(document) = window.document() {
+            if let Some(head) = document.head() {
+                let origin = window.location().origin().unwrap_or_default();
+                let full_stream_url = format!("{}{}", origin, stream_url);
+                let full_page_url = format!("{}/session/{}", origin, session_id);
+
+                let meta_tags = vec![
+                    ("og:title", format!("Realtime SVG - {}", session_id)),
+                    ("og:type", "website".to_string()),
+                    ("og:image", full_stream_url.clone()),
+                    ("og:url", full_page_url),
+                    ("og:description", "실시간 SVG 스트리밍 세션".to_string()),
+                    ("twitter:card", "summary_large_image".to_string()),
+                    ("twitter:image", full_stream_url),
+                ];
+
+                for (property, content) in meta_tags {
+                    if let Ok(meta) = document.create_element("meta") {
+                        let _ = meta.set_attribute("property", property);
+                        let _ = meta.set_attribute("content", &content);
+                        let _ = head.append_child(&meta);
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn clear_meta_tags() {
+    if let Some(window) = web_sys::window() {
+        if let Some(document) = window.document() {
+            if let Some(head) = document.head() {
+                let properties = vec!["og:title", "og:type", "og:image", "og:url", "og:description", "twitter:card", "twitter:image"];
+                
+                for property in properties {
+                    let selector = format!("meta[property='{}']", property);
+                    if let Ok(elements) = document.query_selector_all(&selector) {
+                        for i in 0..elements.length() {
+                            if let Some(element) = elements.item(i) {
+                                let _ = head.remove_child(&element);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 #[derive(Properties, PartialEq)]
 pub struct SessionDetailPageProps {
     pub user_id: String,
@@ -61,6 +112,26 @@ pub fn session_detail_page(props: &SessionDetailPageProps) -> Html {
                 }
                 loading.set(false);
             });
+        });
+    }
+
+    {
+        let session_id = props.session_id.clone();
+        let is_user_session = props.is_user_session;
+        let user_id = props.user_id.clone();
+
+        use_effect_with(session_id.clone(), move |_| {
+            let stream_url = if is_user_session {
+                format!("/stream/{}/{}", user_id, session_id)
+            } else {
+                format!("/stream/{}", session_id)
+            };
+
+            update_meta_tags(&session_id, &stream_url);
+
+            move || {
+                clear_meta_tags();
+            }
         });
     }
 
@@ -227,7 +298,7 @@ pub fn session_detail_page(props: &SessionDetailPageProps) -> Html {
                                                         window.location().origin().unwrap(),
                                                         stream_url
                                                     );
-                                                    let html_code = format!(r#"<img src="{}" alt="realtime-svg" />"#, full_url);
+                                                    let html_code = format!(r#"<a href="{}" target="_blank"><img src="{}" alt="realtime-svg" /></a>"#, full_url, full_url);
                                                     let clipboard = window.navigator().clipboard();
                                                     let toast_message = toast_message.clone();
                                                     wasm_bindgen_futures::spawn_local(async move {
@@ -250,7 +321,9 @@ pub fn session_detail_page(props: &SessionDetailPageProps) -> Html {
                                     </button>
                                 </div>
                             </div>
-                            <img src={stream_url.clone()} alt="Session stream" />
+                            <a href={stream_url.clone()} target="_blank">
+                                <img src={stream_url.clone()} alt="Session stream" />
+                            </a>
                         </div>
 
                         <div class="args-editor">

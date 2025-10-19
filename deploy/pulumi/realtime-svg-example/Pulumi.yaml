@@ -1,0 +1,3 @@
+name: realtime-svg-example
+runtime: nodejs
+description: Example deployment using realtime-svg module

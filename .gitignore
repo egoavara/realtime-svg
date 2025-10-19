@@ -35,6 +35,7 @@ dump.rdb
 
 # Logs
 *.log
+.tmp
 
 # OS
 .DS_Store

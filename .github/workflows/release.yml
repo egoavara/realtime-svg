@@ -103,10 +103,8 @@ jobs:
             needs_linker_install: true
             linker: aarch64-linux-musl-gcc
             linker_install_cmd: |
-              sudo apt-get update && sudo apt-get install -y curl
-              curl -O -L https://musl.cc/aarch64-linux-musl-cross.tgz
-              sudo tar xf aarch64-linux-musl-cross.tgz -C /opt
-              echo "/opt/aarch64-linux-musl-cross/bin" | sudo tee -a $GITHUB_PATH
+              sudo apt-get update && sudo apt-get install -y curl zig
+              cargo install --locked cargo-zigbuild
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             asset_name_suffix: linux-gnu-amd64

@@ -101,10 +101,9 @@ jobs:
             asset_name_suffix: linux-musl-arm64
             asset_content_type: application/octet-stream
             needs_linker_install: true
+            zig_install: true
             linker: aarch64-linux-musl-gcc
-            linker_install_cmd: |
-              sudo apt-get update && sudo apt-get install -y curl zig
-              cargo install --locked cargo-zigbuild
+            linker_install_cmd: cargo install --locked cargo-zigbuild
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             asset_name_suffix: linux-gnu-amd64
@@ -129,6 +128,10 @@ jobs:
           cache-key: "rust-${{ runner.os }}-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}"
           target: ${{ matrix.target }}
           rustflags: ${{ matrix.rustflags }}
+
+      - name: Install zig if needed
+        if: matrix.zig_install
+        uses: mlugg/setup-zig@v2
 
       - name: Install cross-linker if needed
         if: matrix.needs_linker_install

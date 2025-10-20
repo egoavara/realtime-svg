@@ -1,8 +1,9 @@
 resource "kubernetes_config_map" "realtime_svg" {
   metadata {
-    name      = "${local.app_name}-config"
-    namespace = var.namespace
-    labels    = local.labels
+    name        = "${local.app_name}-config"
+    namespace   = var.namespace
+    labels      = local.labels
+    annotations = merge(var.common_annotations, var.configmap_annotations)
   }
 
   data = {

@@ -11,6 +11,9 @@ metadata:
     # WARNING: In-memory Redis - data will be lost on Pod restart
     realtime-svg.io/redis-mode: "in-memory"
     realtime-svg.io/persistence: "disabled"
+    {{- with (merge (.Values.redisDeploymentAnnotations | default dict) (.Values.commonAnnotations | default dict)) }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   replicas: 1
   strategy:

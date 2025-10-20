@@ -24,12 +24,21 @@ export interface RealtimeSvgArgs {
     ingressPathType?: pulumi.Input<string>;
     ingressTlsEnabled?: pulumi.Input<boolean>;
     ingressTlsSecretName?: pulumi.Input<string>;
+    ingressAnnotations?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
     
     serviceType?: pulumi.Input<string>;
     servicePort?: pulumi.Input<number>;
     
     configLogLevel?: pulumi.Input<string>;
     configPort?: pulumi.Input<number>;
+    
+    commonAnnotations?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+    deploymentAnnotations?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+    serviceAnnotations?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+    configMapAnnotations?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+    secretAnnotations?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+    redisDeploymentAnnotations?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
+    redisServiceAnnotations?: pulumi.Input<{[key: string]: pulumi.Input<string>}>;
 }
 
 export class RealtimeSvg extends pulumi.ComponentResource {
@@ -64,12 +73,21 @@ export class RealtimeSvg extends pulumi.ComponentResource {
         const ingressPathType = args.ingressPathType || "Prefix";
         const ingressTlsEnabled = args.ingressTlsEnabled ?? false;
         const ingressTlsSecretName = args.ingressTlsSecretName || "";
+        const ingressAnnotations = args.ingressAnnotations || {};
         
         const serviceType = args.serviceType || "ClusterIP";
         const servicePort = args.servicePort || 80;
         
         const configLogLevel = args.configLogLevel || "info";
         const configPort = args.configPort || 8080;
+        
+        const commonAnnotations = args.commonAnnotations || {};
+        const deploymentAnnotations = args.deploymentAnnotations || {};
+        const serviceAnnotations = args.serviceAnnotations || {};
+        const configMapAnnotations = args.configMapAnnotations || {};
+        const secretAnnotations = args.secretAnnotations || {};
+        const redisDeploymentAnnotations = args.redisDeploymentAnnotations || {};
+        const redisServiceAnnotations = args.redisServiceAnnotations || {};
 
         const labels = {
             "app.kubernetes.io/name": appName,
@@ -101,6 +119,7 @@ export class RealtimeSvg extends pulumi.ComponentResource {
                 name: `${appName}-config`,
                 namespace: namespace,
                 labels: labels,
+                annotations: pulumi.all([commonAnnotations, configMapAnnotations]).apply(([common, specific]) => ({...common, ...specific})),
             },
             data: {
                 REDIS_URL: redisUrl,
@@ -114,6 +133,7 @@ export class RealtimeSvg extends pulumi.ComponentResource {
                 name: `${appName}-secret`,
                 namespace: namespace,
                 labels: labels,
+                annotations: pulumi.all([commonAnnotations, secretAnnotations]).apply(([common, specific]) => ({...common, ...specific})),
             },
             type: "Opaque",
             data: {},
@@ -124,6 +144,7 @@ export class RealtimeSvg extends pulumi.ComponentResource {
                 name: appName,
                 namespace: namespace,
                 labels: backendLabels,
+                annotations: pulumi.all([commonAnnotations, deploymentAnnotations]).apply(([common, specific]) => ({...common, ...specific})),
             },
             spec: {
                 replicas: replicas,
@@ -226,6 +247,7 @@ export class RealtimeSvg extends pulumi.ComponentResource {
                 name: appName,
                 namespace: namespace,
                 labels: backendLabels,
+                annotations: pulumi.all([commonAnnotations, serviceAnnotations]).apply(([common, specific]) => ({...common, ...specific})),
             },
             spec: {
                 type: serviceType,
@@ -249,6 +271,7 @@ export class RealtimeSvg extends pulumi.ComponentResource {
                     name: `${appName}-redis`,
                     namespace: namespace,
                     labels: redisLabels,
+                    annotations: pulumi.all([commonAnnotations, redisDeploymentAnnotations]).apply(([common, specific]) => ({...common, ...specific})),
                 },
                 spec: {
                     replicas: 1,
@@ -299,6 +322,7 @@ export class RealtimeSvg extends pulumi.ComponentResource {
                     name: `${appName}-redis`,
                     namespace: namespace,
                     labels: redisLabels,
+                    annotations: pulumi.all([commonAnnotations, redisServiceAnnotations]).apply(([common, specific]) => ({...common, ...specific})),
                 },
                 spec: {
                     type: "ClusterIP",
@@ -335,6 +359,7 @@ export class RealtimeSvg extends pulumi.ComponentResource {
                     name: appName,
                     namespace: namespace,
                     labels: labels,
+                    annotations: ingressAnnotations,
                 },
                 spec: {
                     tls: tlsConfig,

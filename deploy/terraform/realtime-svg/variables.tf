@@ -221,3 +221,45 @@ variable "labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "common_annotations" {
+  description = "Common annotations to apply to all resources"
+  type        = map(string)
+  default     = {}
+}
+
+variable "deployment_annotations" {
+  description = "Annotations for Deployment resource"
+  type        = map(string)
+  default     = {}
+}
+
+variable "service_annotations" {
+  description = "Annotations for Service resource"
+  type        = map(string)
+  default     = {}
+}
+
+variable "configmap_annotations" {
+  description = "Annotations for ConfigMap resource"
+  type        = map(string)
+  default     = {}
+}
+
+variable "secret_annotations" {
+  description = "Annotations for Secret resource"
+  type        = map(string)
+  default     = {}
+}
+
+variable "redis_deployment_annotations" {
+  description = "Annotations for Redis Deployment resource (only used if redis_enabled=true)"
+  type        = map(string)
+  default     = {}
+}
+
+variable "redis_service_annotations" {
+  description = "Annotations for Redis Service resource (only used if redis_enabled=true)"
+  type        = map(string)
+  default     = {}
+}

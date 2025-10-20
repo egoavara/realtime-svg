@@ -94,6 +94,27 @@ secrets:
 # Pod annotations
 podAnnotations: {}
 
+# Common annotations for all resources
+commonAnnotations: {}
+
+# Deployment-specific annotations
+deploymentAnnotations: {}
+
+# Service-specific annotations
+serviceAnnotations: {}
+
+# ConfigMap-specific annotations
+configMapAnnotations: {}
+
+# Secret-specific annotations
+secretAnnotations: {}
+
+# Redis deployment annotations (only used if redis.enabled=true)
+redisDeploymentAnnotations: {}
+
+# Redis service annotations (only used if redis.enabled=true)
+redisServiceAnnotations: {}
+
 # Pod security context
 podSecurityContext: {}
   # fsGroup: 2000

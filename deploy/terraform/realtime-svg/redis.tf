@@ -2,9 +2,10 @@ resource "kubernetes_deployment" "redis" {
   count = var.redis_enabled ? 1 : 0
 
   metadata {
-    name      = "${local.app_name}-redis"
-    namespace = var.namespace
-    labels    = local.redis_labels
+    name        = "${local.app_name}-redis"
+    namespace   = var.namespace
+    labels      = local.redis_labels
+    annotations = merge(var.common_annotations, var.redis_deployment_annotations)
   }
 
   spec {
@@ -113,9 +114,10 @@ resource "kubernetes_service" "redis" {
   count = var.redis_enabled ? 1 : 0
 
   metadata {
-    name      = "${local.app_name}-redis"
-    namespace = var.namespace
-    labels    = local.redis_labels
+    name        = "${local.app_name}-redis"
+    namespace   = var.namespace
+    labels      = local.redis_labels
+    annotations = merge(var.common_annotations, var.redis_service_annotations)
   }
 
   spec {

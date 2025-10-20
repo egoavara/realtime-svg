@@ -1,8 +1,9 @@
 resource "kubernetes_deployment" "realtime_svg" {
   metadata {
-    name      = local.app_name
-    namespace = var.namespace
-    labels    = local.backend_labels
+    name        = local.app_name
+    namespace   = var.namespace
+    labels      = local.backend_labels
+    annotations = merge(var.common_annotations, var.deployment_annotations)
   }
 
   spec {
@@ -133,9 +134,10 @@ resource "kubernetes_deployment" "realtime_svg" {
 
 resource "kubernetes_service" "realtime_svg" {
   metadata {
-    name      = local.app_name
-    namespace = var.namespace
-    labels    = local.backend_labels
+    name        = local.app_name
+    namespace   = var.namespace
+    labels      = local.backend_labels
+    annotations = merge(var.common_annotations, var.service_annotations)
   }
 
   spec {

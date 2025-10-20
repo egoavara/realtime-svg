@@ -7,6 +7,10 @@ metadata:
   labels:
     {{- include "realtime-svg.labels" . | nindent 4 }}
     app.kubernetes.io/component: redis
+  {{- with (merge (.Values.redisServiceAnnotations | default dict) (.Values.commonAnnotations | default dict)) }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   type: ClusterIP
   ports:

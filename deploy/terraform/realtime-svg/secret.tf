@@ -1,8 +1,9 @@
 resource "kubernetes_secret" "realtime_svg" {
   metadata {
-    name      = "${local.app_name}-secret"
-    namespace = var.namespace
-    labels    = local.labels
+    name        = "${local.app_name}-secret"
+    namespace   = var.namespace
+    labels      = local.labels
+    annotations = merge(var.common_annotations, var.secret_annotations)
   }
 
   type = "Opaque"

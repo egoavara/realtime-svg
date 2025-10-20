@@ -12,6 +12,7 @@ use common::{
     whoami::ExtractWhoAmI, SvgFrame,
 };
 use tokio::sync::mpsc;
+use tokio::time::{interval, Duration};
 use tokio_stream::{once, wrappers::ReceiverStream, StreamExt};
 use tracing::{error, warn};
 
@@ -19,6 +20,7 @@ use tracing::{error, warn};
 pub struct QueryParams {
     double_frame: Option<bool>,
     as_bot: Option<bool>,
+    keep_alive: Option<u64>,
 }
 
 pub async fn handler(
@@ -45,26 +47,54 @@ pub async fn handler(
     let (tx, rx) = mpsc::channel::<SvgFrame>(16);
     let tx_clone = tx.clone();
     let session_for_log = session_id.clone();
+    let keep_alive_interval = query.keep_alive;
+
     tokio::spawn(async move {
         let mut pubsub = pubsub;
         let mut on_message = pubsub.on_message();
-        while let Some(msg) = on_message.next().await {
-            let payload: String = match msg.get_payload() {
-                Ok(payload) => payload,
-                Err(err) => {
-                    error!(session_id = %session_for_log, %err, "Redis 메시지 페이로드를 읽지 못했습니다");
-                    continue;
-                }
-            };
+        let mut last_frame: Option<SvgFrame> = None;
+        let mut keep_alive_timer = keep_alive_interval.map(|secs| interval(Duration::from_secs(secs)));
 
-            match serde_json::from_str::<SvgFrame>(&payload) {
-                Ok(frame) => {
-                    if tx_clone.send(frame).await.is_err() {
-                        break;
+        loop {
+            tokio::select! {
+                msg = on_message.next() => {
+                    match msg {
+                        Some(msg) => {
+                            let payload: String = match msg.get_payload() {
+                                Ok(payload) => payload,
+                                Err(err) => {
+                                    error!(session_id = %session_for_log, %err, "Redis 메시지 페이로드를 읽지 못했습니다");
+                                    continue;
+                                }
+                            };
+
+                            match serde_json::from_str::<SvgFrame>(&payload) {
+                                Ok(frame) => {
+                                    last_frame = Some(frame.clone());
+                                    if tx_clone.send(frame).await.is_err() {
+                                        break;
+                                    }
+                                }
+                                Err(err) => {
+                                    error!(session_id = %session_for_log, %err, "Redis 메시지를 SVG 프레임으로 역직렬화하지 못했습니다");
+                                }
+                            }
+                        }
+                        None => break,
                     }
                 }
-                Err(err) => {
-                    error!(session_id = %session_for_log, %err, "Redis 메시지를 SVG 프레임으로 역직렬화하지 못했습니다");
+                _ = async {
+                    if let Some(ref mut timer) = keep_alive_timer {
+                        timer.tick().await;
+                    } else {
+                        std::future::pending::<()>().await;
+                    }
+                } => {
+                    if let Some(ref frame) = last_frame {
+                        if tx_clone.send(frame.clone()).await.is_err() {
+                            break;
+                        }
+                    }
                 }
             }
         }

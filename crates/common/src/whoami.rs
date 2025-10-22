@@ -4,9 +4,8 @@ use axum::{
     extract::{FromRef, FromRequestParts},
     http::{request::Parts, HeaderMap},
 };
-use tracing::info;
 
-use crate::{errors::ApiError, state::AppState};
+use crate::state::AppState;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WhoAmI {
@@ -21,7 +20,7 @@ impl WhoAmI {
         let accept = header.get("accept").and_then(|v| v.to_str().ok());
         let sec_fetch_mode = header.get("sec-fetch-mode").and_then(|v| v.to_str().ok());
 
-        match sec_fetch_mode { 
+        match sec_fetch_mode {
             Some("navigate") => return WhoAmI::Human,
             Some("no-cors") => return WhoAmI::Bot,
             _ => {}

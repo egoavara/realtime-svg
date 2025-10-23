@@ -72,7 +72,7 @@ jobs:
           # AUTOUPDATE 주석 다음 줄부터 variable "image_tag" 블록의 default만 업데이트
           sed -i '/# AUTOUPDATE.*prepare-release/,/^}/ s/default *= *"v[^"]*"/default     = "v${{ github.event.inputs.version }}"/' deploy/terraform/realtime-svg/variables.tf
           echo "Terraform variables.tf 버전 업데이트 완료"
-          grep -A4 "# AUTOUPDATE.*image_tag" deploy/terraform/realtime-svg/variables.tf
+          grep -A4 "# AUTOUPDATE" deploy/terraform/realtime-svg/variables.tf
 
       - name: 변경된 파일 확인
         run: git status -s

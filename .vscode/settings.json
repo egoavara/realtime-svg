@@ -1,0 +1,34 @@
+{
+    "todohighlight.keywords": [
+        {
+            "text": "NOTE",
+            "color": "#FF00FF",
+            "backgroundColor": "transparent",
+            "overviewRulerColor": "rgba(255, 0, 255, 0.7)",
+            "fontWeight": "bold",
+            "fontStyle": "italic"
+        },
+        {
+            "text": "FIXME",
+            "color": "#FF0000",
+            "backgroundColor": "transparent",
+            "overviewRulerColor": "rgba(255, 0, 0, 0.7)",
+            "fontWeight": "bold",
+            "fontStyle": "italic"
+        },
+        {
+            "text": "[NEEDS CLARIFICATION]",
+            "before": {
+                "contentText": "🚨"
+            },
+            "fontWeight": "bold"
+        },
+        {
+            "text": "AUTOUPDATE:",
+            "before": {
+                "contentText": "🚨"
+            },
+            "fontWeight": "bold"
+        }
+    ],
+}

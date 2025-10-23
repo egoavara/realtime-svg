@@ -31,7 +31,6 @@ dump.rdb
 
 # IDEs
 .idea/
-.vscode/
 
 # Logs
 *.log

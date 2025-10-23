@@ -136,7 +136,7 @@ spec:
     spec:
       containers:
       - name: realtime-svg
-        image: ghcr.io/egoavara/realtime-svg:v0.1.4
+        image: ghcr.io/egoavara/realtime-svg:v0.1.9
         imagePullPolicy: IfNotPresent
         ports:
         - name: http

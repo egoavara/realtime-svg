@@ -52,6 +52,24 @@ jobs:
           echo "Pulumi package.json 버전 업데이트 완료"
           grep "\"version\":" deploy/pulumi/realtime-svg/package.json
 
+      - name: Pulumi index.ts 기본 이미지 태그 업데이트
+        run: |
+          sed -i 's/const imageTag = args\.imageTag || "v[^"]*"/const imageTag = args.imageTag || "v${{ github.event.inputs.version }}"/' deploy/pulumi/realtime-svg/index.ts
+          echo "Pulumi index.ts 버전 업데이트 완료"
+          grep "const imageTag" deploy/pulumi/realtime-svg/index.ts
+
+      - name: Kubernetes install.yaml 이미지 버전 업데이트
+        run: |
+          sed -i 's|ghcr\.io/egoavara/realtime-svg:v[0-9.]*|ghcr.io/egoavara/realtime-svg:v${{ github.event.inputs.version }}|' deploy/kubernetes/realtime-svg/install.yaml
+          echo "Kubernetes install.yaml 버전 업데이트 완료"
+          grep "ghcr.io/egoavara/realtime-svg" deploy/kubernetes/realtime-svg/install.yaml
+
+      - name: Terraform variables.tf 기본 이미지 태그 업데이트
+        run: |
+          sed -i '/^variable "image_tag"/,/^}/ s/default *= *"v[^"]*"/default     = "v${{ github.event.inputs.version }}"/' deploy/terraform/realtime-svg/variables.tf
+          echo "Terraform variables.tf 버전 업데이트 완료"
+          grep -A3 'variable "image_tag"' deploy/terraform/realtime-svg/variables.tf
+
       - name: 변경된 파일 확인
         run: git status -s
 

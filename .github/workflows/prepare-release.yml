@@ -42,7 +42,7 @@ jobs:
 
       - name: Helm values.yaml 버전 업데이트
         run: |
-          sed -i "s/tag: .*/tag: v${{ github.event.inputs.version }}/" deploy/helm/realtime-svg/values.yaml
+          yq eval '.image.tag = "v${{ github.event.inputs.version }}"' -i deploy/helm/realtime-svg/values.yaml
           echo "Helm values.yaml 버전 업데이트 완료"
           grep "tag:" deploy/helm/realtime-svg/values.yaml
 

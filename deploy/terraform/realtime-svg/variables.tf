@@ -14,7 +14,7 @@ variable "image_repository" {
 variable "image_tag" {
   description = "Container image tag"
   type        = string
-  default     = "v0.1.9"
+  default     = "v0.1.10"
 }
 
 variable "image_pull_policy" {

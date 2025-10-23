@@ -42,9 +42,10 @@ jobs:
 
       - name: Helm values.yaml 버전 업데이트
         run: |
-          yq eval '.image.tag = "v${{ github.event.inputs.version }}"' -i deploy/helm/realtime-svg/values.yaml
+          # AUTOUPDATE 주석이 있는 tag만 업데이트
+          sed -i '/# AUTOUPDATE.*prepare-release/{ n; s/tag: v.*/tag: v${{ github.event.inputs.version }}/; }' deploy/helm/realtime-svg/values.yaml
           echo "Helm values.yaml 버전 업데이트 완료"
-          grep "tag:" deploy/helm/realtime-svg/values.yaml
+          grep -A1 "# AUTOUPDATE" deploy/helm/realtime-svg/values.yaml | grep "tag:"
 
       - name: Pulumi package.json 버전 업데이트
         run: |
@@ -54,21 +55,24 @@ jobs:
 
       - name: Pulumi index.ts 기본 이미지 태그 업데이트
         run: |
-          sed -i 's/const imageTag = args\.imageTag || "v[^"]*"/const imageTag = args.imageTag || "v${{ github.event.inputs.version }}"/' deploy/pulumi/realtime-svg/index.ts
+          # AUTOUPDATE 주석 다음 줄의 imageTag만 업데이트
+          sed -i '/\/\/ AUTOUPDATE.*prepare-release/{ n; s/const imageTag = args\.imageTag || "v[^"]*"/const imageTag = args.imageTag || "v${{ github.event.inputs.version }}"/; }' deploy/pulumi/realtime-svg/index.ts
           echo "Pulumi index.ts 버전 업데이트 완료"
-          grep "const imageTag" deploy/pulumi/realtime-svg/index.ts
+          grep -A1 "// AUTOUPDATE" deploy/pulumi/realtime-svg/index.ts | grep "const imageTag"
 
       - name: Kubernetes install.yaml 이미지 버전 업데이트
         run: |
-          sed -i 's|ghcr\.io/egoavara/realtime-svg:v[0-9.]*|ghcr.io/egoavara/realtime-svg:v${{ github.event.inputs.version }}|' deploy/kubernetes/realtime-svg/install.yaml
+          # AUTOUPDATE 주석 다음 줄의 image만 업데이트
+          sed -i '/# AUTOUPDATE.*prepare-release/{ n; s|ghcr\.io/egoavara/realtime-svg:v[0-9.]*|ghcr.io/egoavara/realtime-svg:v${{ github.event.inputs.version }}|; }' deploy/kubernetes/realtime-svg/install.yaml
           echo "Kubernetes install.yaml 버전 업데이트 완료"
-          grep "ghcr.io/egoavara/realtime-svg" deploy/kubernetes/realtime-svg/install.yaml
+          grep -A1 "# AUTOUPDATE" deploy/kubernetes/realtime-svg/install.yaml | grep "image:"
 
       - name: Terraform variables.tf 기본 이미지 태그 업데이트
         run: |
-          sed -i '/^variable "image_tag"/,/^}/ s/default *= *"v[^"]*"/default     = "v${{ github.event.inputs.version }}"/' deploy/terraform/realtime-svg/variables.tf
+          # AUTOUPDATE 주석 다음 줄부터 variable "image_tag" 블록의 default만 업데이트
+          sed -i '/# AUTOUPDATE.*prepare-release/,/^}/ s/default *= *"v[^"]*"/default     = "v${{ github.event.inputs.version }}"/' deploy/terraform/realtime-svg/variables.tf
           echo "Terraform variables.tf 버전 업데이트 완료"
-          grep -A3 'variable "image_tag"' deploy/terraform/realtime-svg/variables.tf
+          grep -A4 "# AUTOUPDATE.*image_tag" deploy/terraform/realtime-svg/variables.tf
 
       - name: 변경된 파일 확인
         run: git status -s

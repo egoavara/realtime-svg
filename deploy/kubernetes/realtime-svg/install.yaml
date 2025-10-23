@@ -136,6 +136,7 @@ spec:
     spec:
       containers:
       - name: realtime-svg
+        # AUTOUPDATE: prepare-release workflow updates this version - do not edit manually
         image: ghcr.io/egoavara/realtime-svg:v0.1.9
         imagePullPolicy: IfNotPresent
         ports:

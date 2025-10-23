@@ -10,6 +10,7 @@ variable "image_repository" {
   default     = "ghcr.io/egoavara/realtime-svg"
 }
 
+# AUTOUPDATE: prepare-release workflow updates this version - do not edit manually
 variable "image_tag" {
   description = "Container image tag"
   type        = string

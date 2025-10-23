@@ -55,6 +55,7 @@ export class RealtimeSvg extends pulumi.ComponentResource {
         const namespace = args.namespace || "default";
         const replicas = args.replicas || 2;
         const imageRepository = args.imageRepository || "ghcr.io/egoavara/realtime-svg";
+        // AUTOUPDATE: prepare-release workflow updates this version - do not edit manually
         const imageTag = args.imageTag || "v0.1.9";
         const imagePullPolicy = args.imagePullPolicy || "IfNotPresent";
         

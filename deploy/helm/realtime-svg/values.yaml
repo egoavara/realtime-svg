@@ -30,7 +30,7 @@ redis:
   # Redis image configuration (only used if enabled=true)
   image:
     repository: redis
-    tag: v0.1.8
+    tag: "8-alpine"
     pullPolicy: IfNotPresent
   
   # Redis password (leave empty for no authentication in dev)

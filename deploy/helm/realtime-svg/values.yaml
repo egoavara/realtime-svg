@@ -6,7 +6,7 @@
 image:
   repository: ghcr.io/egoavara/realtime-svg
   # AUTOUPDATE: prepare-release workflow updates this version - do not edit manually
-  tag: v0.1.10
+  tag: v0.1.11
   pullPolicy: IfNotPresent
   # pullSecrets: []
 # Number of replicas
